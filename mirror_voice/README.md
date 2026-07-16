@@ -2,6 +2,8 @@
 
 Local-first voice/language fusion for the six Mirror qualities. Input is newline-delimited JSON so any microphone analyzer, transcription system, or live performance process can feed it without coupling the engine to one vendor.
 
+For the expanded three-layer Ableton instrument, see the [Mirror Ensemble topology](ENSEMBLE.md).
+
 ```sh
 python3 -m mirror_voice
 ```

@@ -91,7 +91,9 @@ def main() -> None:
     args = parser.parse_args()
 
     audio_blocks, phrases, meanings = queue.Queue(maxsize=16), queue.Queue(maxsize=2), queue.Queue()
-    engine, sender = MirrorVoiceEngine(), MirrorOSCSender(port=args.port)
+    # Language leads the instrument; acoustics and silence shade rather than
+    # erase the most recently understood phrase.
+    engine, sender = MirrorVoiceEngine(semantic_weight=.8), MirrorOSCSender(port=args.port)
     ear = LocalChatSemanticEar(args.local_model, args.local_url)
     segmenter = PhraseSegmenter(args.sample_rate, args.block_seconds, args.threshold, args.endpoint_seconds)
     whisper_model = cached_mlx_model(args.whisper_model)
