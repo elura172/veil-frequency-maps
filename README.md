@@ -41,6 +41,9 @@ The adapter can schedule smooth OSC gestures without requiring the model to make
 - `ableton_golden_crossfade`: complementary golden-ratio track fades
 - `ableton_get_crossfader` / `ableton_set_crossfader`: Live's actual master A/B crossfader
 - `ableton_get_crossfade_assignment` / `ableton_assign_crossfade`: read or assign a track to A, neither side, or B
+- `ableton_inspect_wavetable`: discover the loaded Wavetable's live parameter surface
+- `ableton_set_wavetable_parameter`: resolve and set a parameter by display name
+- `ableton_morph_wavetable`: animate a named, multi-parameter Wavetable state as one gesture
 - `ableton_get_gestures`: inspect scheduled and running gestures
 - `ableton_cancel_gesture` / `ableton_cancel_all_gestures`
 
@@ -49,6 +52,8 @@ Durations may be expressed in seconds or beats and starts may be quantized to th
 The metallic arrivals use normalized power curves: golden `t^φ`, silver `t^(1+√2)`, and bronze `t^((3+√13)/2)`. Their complementary `*_out` forms reverse the velocity while preserving exact endpoints.
 
 The `master_crossfader` gesture target controls Live's actual crossfader over `-1..1`; it works with single and batch ramps using every supported curve. Unlike the legacy `ableton_golden_crossfade` helper, it does not rewrite track volumes.
+
+Wavetable tools never assume fixed parameter indices. They verify the target device, inventory its names, ranges, and quantization through AbletonOSC, and resolve each requested name at call time. Ambiguous partial names are rejected with their candidate matches. This keeps saved intentions portable across Live updates while still allowing the raw device and OSC tools as escape hatches.
 
 Interpolation domains may be `linear`, `log` (useful for positive frequency/time values), or `db`. In `db` mode the endpoints are specified in decibels and converted to linear amplitude before being sent to Live.
 

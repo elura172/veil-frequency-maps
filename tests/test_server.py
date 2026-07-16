@@ -24,6 +24,16 @@ class FakeBridge:
     def query(self, address, params=(), timeout=0.75):
         if address == "/live/track/get/crossfade_assign":
             return [params[0], 2]
+        if address.startswith("/live/device/get/"):
+            device_values = {
+                "/live/device/get/class_name": [params[0], params[1], "InstrumentVector"],
+                "/live/device/get/parameters/name": [params[0], params[1], "Device On", "Osc 1 Position"],
+                "/live/device/get/parameters/value": [params[0], params[1], 1, 0.25],
+                "/live/device/get/parameters/min": [params[0], params[1], 0, 0.0],
+                "/live/device/get/parameters/max": [params[0], params[1], 1, 1.0],
+                "/live/device/get/parameters/is_quantized": [params[0], params[1], 1, 0],
+            }
+            return device_values[address]
         values = {
             "/live/song/get/tempo": [120.0],
             "/live/song/get/current_song_time": [2.5],
@@ -83,6 +93,17 @@ class ServerTests(unittest.TestCase):
         result = server.call_tool("ableton_assign_crossfade", {"track_index": 3, "assignment": "b"})
         self.assertEqual(bridge.sent[-1], ("/live/track/set/crossfade_assign", [3, 2]))
         self.assertEqual(result["value"], 2)
+
+    def test_named_wavetable_parameter_is_resolved_at_runtime(self):
+        bridge = FakeBridge(osc=True)
+        result = Server(bridge).call_tool("ableton_set_wavetable_parameter", {
+            "track_index": 2,
+            "device_index": 0,
+            "parameter": "osc-1 position",
+            "value": 0.75,
+        })
+        self.assertEqual(result, {"parameter": "Osc 1 Position", "index": 1, "value": 0.75})
+        self.assertEqual(bridge.sent[-1], ("/live/device/set/parameter/value", [2, 0, 1, 0.75]))
 
     def test_beat_duration_and_bar_quantization(self):
         server = Server(FakeBridge(osc=True))
