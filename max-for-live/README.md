@@ -5,3 +5,7 @@ This directory contains project-agnostic Max devices and protocols. Composition-
 ## Wavetable OSC Modulator
 
 The planned runtime boundary is documented in [`Wavetable OSC Modulator/PROTOCOL.md`](Wavetable%20OSC%20Modulator/PROTOCOL.md). MCP owns discovery, durable state changes, and musical intentions; Max owns continuous signals and `live.remote~` mappings. No project frequencies or forms belong in this device.
+
+## Operator OSC Modulator
+
+The parallel Operator boundary is documented in [`Operator OSC Modulator/PROTOCOL.md`](Operator%20OSC%20Modulator/PROTOCOL.md). It uses separate ports so both modulation devices can coexist.

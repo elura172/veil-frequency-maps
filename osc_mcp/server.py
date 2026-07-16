@@ -10,6 +10,7 @@ from typing import Any
 
 from . import __version__
 from .gestures import GestureScheduler
+from .operator import parameter_inventory as operator_inventory
 from .wavetable import checked_value, parameter_inventory, resolve_parameter
 
 OSC_INSTALL = Path(os.getenv(
@@ -61,6 +62,9 @@ WAVETABLE_CHANGE = object_schema({
     "curve": {"type": "string", "enum": CURVES},
     "domain": {"type": "string", "enum": ["linear", "log", "db"]},
 }, ["parameter", "to_value"])
+# Operator and Wavetable share Live's DeviceParameter mechanics and schemas.
+OPERATOR_LOCATION = WAVETABLE_LOCATION
+OPERATOR_CHANGE = WAVETABLE_CHANGE
 TOOLS = [
     {"name": "ableton_health", "description": "Check Ableton connectivity. Prefers AbletonOSC and reports TCP fallback status.", "inputSchema": object_schema()},
     {"name": "ableton_get_session", "description": "Get tempo, time signature, transport, loop, and track counts.", "inputSchema": object_schema()},
@@ -75,6 +79,9 @@ TOOLS = [
     {"name": "ableton_inspect_wavetable", "description": "Inspect a Wavetable instance by name, value, range, and quantization without relying on fixed parameter indices.", "inputSchema": object_schema(WAVETABLE_LOCATION, ["track_index", "device_index"])},
     {"name": "ableton_set_wavetable_parameter", "description": "Set one dynamically resolved Wavetable parameter by its Live display name.", "inputSchema": object_schema({**WAVETABLE_LOCATION, "parameter": {"type": "string", "minLength": 1}, "value": {"type": "number"}}, ["track_index", "device_index", "parameter", "value"])},
     {"name": "ableton_morph_wavetable", "description": "Morph multiple dynamically resolved Wavetable parameters as one cancellable, curve-shaped gesture.", "inputSchema": object_schema({**WAVETABLE_LOCATION, "changes": {"type": "array", "minItems": 1, "items": WAVETABLE_CHANGE}, "duration": {"type": "number", "exclusiveMinimum": 0}, "duration_unit": {"type": "string", "enum": ["seconds", "beats"], "default": "seconds"}, "curve": {"type": "string", "enum": CURVES, "default": "golden"}, "rate_hz": {"type": "number", "minimum": 1, "maximum": 30, "default": 20}, "delay_seconds": {"type": "number", "minimum": 0, "default": 0}, "start_quantization": {"type": "string", "enum": ["none", "beat", "bar"], "default": "none"}}, ["track_index", "device_index", "changes", "duration"])},
+    {"name": "ableton_inspect_operator", "description": "Inspect an Operator instance by name, value, range, and quantization without relying on fixed parameter indices.", "inputSchema": object_schema(OPERATOR_LOCATION, ["track_index", "device_index"])},
+    {"name": "ableton_set_operator_parameter", "description": "Set one dynamically resolved Operator parameter by its Live display name.", "inputSchema": object_schema({**OPERATOR_LOCATION, "parameter": {"type": "string", "minLength": 1}, "value": {"type": "number"}}, ["track_index", "device_index", "parameter", "value"])},
+    {"name": "ableton_morph_operator", "description": "Morph multiple dynamically resolved Operator parameters as one cancellable, curve-shaped gesture.", "inputSchema": object_schema({**OPERATOR_LOCATION, "changes": {"type": "array", "minItems": 1, "items": OPERATOR_CHANGE}, "duration": {"type": "number", "exclusiveMinimum": 0}, "duration_unit": {"type": "string", "enum": ["seconds", "beats"], "default": "seconds"}, "curve": {"type": "string", "enum": CURVES, "default": "golden"}, "rate_hz": {"type": "number", "minimum": 1, "maximum": 30, "default": 20}, "delay_seconds": {"type": "number", "minimum": 0, "default": 0}, "start_quantization": {"type": "string", "enum": ["none", "beat", "bar"], "default": "none"}}, ["track_index", "device_index", "changes", "duration"])},
     {"name": "ableton_get_crossfader", "description": "Get Live's master crossfader value from -1 (A) through 0 to +1 (B).", "inputSchema": object_schema()},
     {"name": "ableton_set_crossfader", "description": "Set Live's master crossfader from -1 (A) through 0 to +1 (B).", "inputSchema": object_schema({"value": {"type": "number", "minimum": -1, "maximum": 1}}, ["value"])},
     {"name": "ableton_get_crossfade_assignment", "description": "Get a track's crossfader assignment as A, neither side, or B.", "inputSchema": object_schema({"track_index": {"type": "integer", "minimum": 0}}, ["track_index"])},
@@ -278,6 +285,33 @@ class Server:
                 resolved.append({"parameter": parameter["name"], "index": parameter["index"], "from_value": start, "to_value": end})
             duration, delay = self._gesture_timing(args)
             result = self.scheduler.schedule(ramps, duration, args.get("curve", "golden"), args.get("rate_hz", 20), delay, "wavetable_morph")
+            result["parameters"] = resolved
+            return result
+        if name in {"ableton_inspect_operator", "ableton_set_operator_parameter", "ableton_morph_operator"}:
+            inventory = operator_inventory(b, args["track_index"], args["device_index"])
+            if name == "ableton_inspect_operator":
+                return inventory
+            if name == "ableton_set_operator_parameter":
+                parameter = resolve_parameter(inventory, args["parameter"])
+                value = checked_value(parameter, args["value"])
+                b.send("/live/device/set/parameter/value", [args["track_index"], args["device_index"], parameter["index"], value])
+                return {"parameter": parameter["name"], "index": parameter["index"], "value": value}
+            ramps = []
+            resolved = []
+            for change in args["changes"]:
+                parameter = resolve_parameter(inventory, change["parameter"])
+                start = checked_value(parameter, change.get("from_value", parameter["value"]))
+                end = checked_value(parameter, change["to_value"])
+                ramps.append({
+                    "target": {"type": "device_parameter", "track_index": args["track_index"], "device_index": args["device_index"], "parameter_index": parameter["index"]},
+                    "from_value": start,
+                    "to_value": end,
+                    "curve": change.get("curve", args.get("curve", "golden")),
+                    "domain": change.get("domain", "linear"),
+                })
+                resolved.append({"parameter": parameter["name"], "index": parameter["index"], "from_value": start, "to_value": end})
+            duration, delay = self._gesture_timing(args)
+            result = self.scheduler.schedule(ramps, duration, args.get("curve", "golden"), args.get("rate_hz", 20), delay, "operator_morph")
             result["parameters"] = resolved
             return result
         if name == "ableton_get_crossfader":

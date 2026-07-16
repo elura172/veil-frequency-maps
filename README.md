@@ -44,6 +44,9 @@ The adapter can schedule smooth OSC gestures without requiring the model to make
 - `ableton_inspect_wavetable`: discover the loaded Wavetable's live parameter surface
 - `ableton_set_wavetable_parameter`: resolve and set a parameter by display name
 - `ableton_morph_wavetable`: animate a named, multi-parameter Wavetable state as one gesture
+- `ableton_inspect_operator`: discover the loaded Operator parameter surface
+- `ableton_set_operator_parameter`: resolve and set an Operator parameter by display name
+- `ableton_morph_operator`: animate a named, multi-parameter Operator state as one gesture
 - `ableton_get_gestures`: inspect scheduled and running gestures
 - `ableton_cancel_gesture` / `ableton_cancel_all_gestures`
 
@@ -54,6 +57,8 @@ The metallic arrivals use normalized power curves: golden `t^Ï†`, silver `t^(1+â
 The `master_crossfader` gesture target controls Live's actual crossfader over `-1..1`; it works with single and batch ramps using every supported curve. Unlike the legacy `ableton_golden_crossfade` helper, it does not rewrite track volumes.
 
 Wavetable tools never assume fixed parameter indices. They verify the target device, inventory its names, ranges, and quantization through AbletonOSC, and resolve each requested name at call time. Ambiguous partial names are rejected with their candidate matches. This keeps saved intentions portable across Live updates while still allowing the raw device and OSC tools as escape hatches.
+
+Operator uses the same dynamic contract. This covers its oscillator levels, coarse/fine or fixed-frequency controls, waveforms, envelopes, FM algorithm, feedback, filter, LFO, pitch envelope, spread, transpose, glide, and global controls whenever Live publishes them as `DeviceParameter` objects.
 
 Interpolation domains may be `linear`, `log` (useful for positive frequency/time values), or `db`. In `db` mode the endpoints are specified in decibels and converted to linear amplitude before being sent to Live.
 

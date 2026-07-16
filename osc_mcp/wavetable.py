@@ -62,10 +62,10 @@ def resolve_parameter(inventory: dict, requested_name: str) -> dict:
     if len(partial) == 1:
         return partial[0]
     if not exact and not partial:
-        raise ValueError("No Wavetable parameter matches %r" % requested_name)
+        raise ValueError("No device parameter matches %r" % requested_name)
     matches = exact or partial
     raise ValueError(
-        "Ambiguous Wavetable parameter %r; matches: %s"
+        "Ambiguous device parameter %r; matches: %s"
         % (requested_name, ", ".join(p["name"] for p in matches))
     )
 
