@@ -13,7 +13,7 @@ Run it with `python3 -m mirror_voice`; see the [engine input contract](mirror_vo
 This project uses two Ableton Live Remote Scripts:
 
 - **AbletonOSC** is the preferred, broad Live Object Model interface over UDP `11000/11001`.
-- **AbletonMCP** remains available over TCP `9877` and is used as a fallback for core operations.
+- **AbletonMCP** remains available over TCP `9877` and is used as a fallback for core operations. Its versioned [User Library extension](integrations/abletonmcp/README.md) allows indexed custom `.amxd` devices to be loaded directly by URI.
 
 The local MCP adapter is launched with:
 

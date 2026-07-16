@@ -1,0 +1,16 @@
+diff --git a/__init__.py b/__init__.py
+--- a/__init__.py
++++ b/__init__.py
+@@ -1131,6 +1131,12 @@ class AbletonMCP(ControlSurface):
+                     browser_or_item.audio_effects,
+                     browser_or_item.midi_effects
+                 ]
++
++                # Custom Max for Live devices and presets live outside the
++                # factory categories. Include Live's indexed User Library so
++                # callers can load them by their stable device:* URI too.
++                if hasattr(browser_or_item, 'user_library'):
++                    categories.append(browser_or_item.user_library)
+                 
+                 for category in categories:
+                     item = self._find_browser_item_by_uri(category, uri, max_depth, current_depth + 1)
