@@ -1,6 +1,12 @@
 import numpy as np
 
+from mirror_voice.capture import audio_device
 from mirror_voice.listen import PhraseSegmenter
+
+
+def test_audio_device_preserves_names_and_converts_indices():
+    assert audio_device("2") == 2
+    assert audio_device("MacBook Air Microphone") == "MacBook Air Microphone"
 
 
 def test_phrase_segmenter_keeps_preroll_and_ends_after_quiet():

@@ -10,7 +10,7 @@ import queue
 import threading
 from time import monotonic
 
-from .capture import analyze
+from .capture import analyze, audio_device
 from .engine import MirrorVoiceEngine
 from .llm import LocalChatSemanticEar
 from .model import AcousticFrame
@@ -76,11 +76,12 @@ def main() -> None:
         raise SystemExit("Install microphone extras: pip install -e '.[voice]'") from exc
 
     parser = argparse.ArgumentParser(description="Speak to local Whisper/Gemma and hear Mirror Voice in Ableton")
-    parser.add_argument("--device")
+    parser.add_argument("--device", type=audio_device)
     parser.add_argument("--sample-rate", type=int, default=16000)
     parser.add_argument("--block-seconds", type=float, default=.1)
     parser.add_argument("--threshold", type=float, default=.008)
     parser.add_argument("--endpoint-seconds", type=float, default=.7)
+    parser.add_argument("--debug-levels", action="store_true", help="Print one-second RMS/VAD diagnostics")
     parser.add_argument("--whisper-model", default="mlx-community/whisper-small-mlx")
     parser.add_argument("--language")
     parser.add_argument("--local-model", default="google/gemma-4-e2b")
@@ -117,6 +118,7 @@ def main() -> None:
             pass
 
     previous_rms, silence, latest = 0.0, 0.0, AcousticFrame()
+    level_peak, level_blocks, next_level_report = 0.0, 0, monotonic() + 1.0
     print(json.dumps({"status": "listening", "whisper_model": whisper_model, "semantic_model": args.local_model}), flush=True)
     try:
         with sd.InputStream(device=args.device, channels=1, samplerate=args.sample_rate,
@@ -124,11 +126,14 @@ def main() -> None:
             while True:
                 samples = audio_blocks.get()
                 raw_rms = float(np.sqrt(np.mean(np.square(samples))))
+                level_peak, level_blocks = max(level_peak, raw_rms), level_blocks + 1
                 latest = analyze(samples, args.sample_rate, previous_rms, silence)
                 silence = silence + args.block_seconds if raw_rms < args.threshold else 0.0
                 latest.silence_seconds, previous_rms = silence, latest.rms
                 phrase = segmenter.push(samples, raw_rms)
                 if phrase is not None:
+                    if args.debug_levels:
+                        print(json.dumps({"vad": "phrase_complete", "seconds": round(len(phrase) / args.sample_rate, 2)}), flush=True)
                     try:
                         phrases.put_nowait(phrase)
                     except queue.Full:
@@ -145,6 +150,10 @@ def main() -> None:
                 except queue.Empty:
                     pass
                 sender.send(engine.update(latest, semantic=semantic, now=monotonic()))
+                if args.debug_levels and monotonic() >= next_level_report:
+                    print(json.dumps({"mic_peak_rms": round(level_peak, 5), "threshold": args.threshold,
+                                      "vad_active": bool(segmenter.parts), "quiet_blocks": segmenter.quiet_blocks}), flush=True)
+                    level_peak, level_blocks, next_level_report = 0.0, 0, monotonic() + 1.0
     except KeyboardInterrupt:
         pass
     finally:

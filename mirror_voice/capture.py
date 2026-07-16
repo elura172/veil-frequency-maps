@@ -11,6 +11,11 @@ from .model import AcousticFrame
 from .osc import MirrorOSCSender
 
 
+def audio_device(value: str):
+    """PortAudio accepts an integer index or a device-name substring."""
+    return int(value) if value.strip().isdigit() else value
+
+
 def analyze(samples, sample_rate: int, previous_rms: float = 0.0, silence_seconds: float = 0.0) -> AcousticFrame:
     import numpy as np
 
@@ -48,7 +53,7 @@ def main() -> None:
     except ImportError as exc:
         raise SystemExit("Install microphone extras: pip install -e '.[voice]'") from exc
     parser = argparse.ArgumentParser(description="Microphone to Mirror Voice OSC")
-    parser.add_argument("--device")
+    parser.add_argument("--device", type=audio_device)
     parser.add_argument("--sample-rate", type=int, default=48000)
     parser.add_argument("--block-seconds", type=float, default=.1)
     parser.add_argument("--port", type=int, default=9000)
