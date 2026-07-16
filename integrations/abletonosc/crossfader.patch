@@ -1,0 +1,47 @@
+diff --git a/abletonosc/song.py b/abletonosc/song.py
+index d9d7e01..7f78a7e 100644
+--- a/abletonosc/song.py
++++ b/abletonosc/song.py
+@@ -98,6 +98,17 @@ class SongHandler(AbletonOSCHandler):
+         #--------------------------------------------------------------------------------
+         self.osc_server.add_handler("/live/song/get/num_tracks", lambda _: (len(self.song.tracks),))
+ 
++        # Live's master A/B crossfader is a mixer parameter with a -1..1 range.
++        def song_get_crossfader(_):
++            return (self.song.master_track.mixer_device.crossfader.value,)
++
++        def song_set_crossfader(params):
++            value, = params
++            self.song.master_track.mixer_device.crossfader.value = max(-1.0, min(1.0, float(value)))
++
++        self.osc_server.add_handler("/live/song/get/crossfader", song_get_crossfader)
++        self.osc_server.add_handler("/live/song/set/crossfader", song_set_crossfader)
++
+         def song_get_track_names(params):
+             if len(params) == 0:
+                 track_index_min, track_index_max = 0, len(self.song.tracks)
+diff --git a/abletonosc/track.py b/abletonosc/track.py
+index 5e21353..3a37885 100644
+--- a/abletonosc/track.py
++++ b/abletonosc/track.py
+@@ -102,6 +102,20 @@ class TrackHandler(AbletonOSCHandler):
+         self.osc_server.add_handler("/live/track/get/send", create_track_callback(track_get_send))
+         self.osc_server.add_handler("/live/track/set/send", create_track_callback(track_set_send))
+ 
++        # Live enum: 0 = A, 1 = neither side, 2 = B.
++        def track_get_crossfade_assign(track, _):
++            return (int(track.mixer_device.crossfade_assign),)
++
++        def track_set_crossfade_assign(track, params):
++            assignment, = params
++            assignment = int(assignment)
++            if assignment not in (0, 1, 2):
++                raise ValueError("crossfade_assign must be 0 (A), 1 (none), or 2 (B)")
++            track.mixer_device.crossfade_assign = assignment
++
++        self.osc_server.add_handler("/live/track/get/crossfade_assign", create_track_callback(track_get_crossfade_assign))
++        self.osc_server.add_handler("/live/track/set/crossfade_assign", create_track_callback(track_set_crossfade_assign))
++
+         def track_delete_clip(track, params: Tuple[Any]):
+             clip_index, = params
+             track.clip_slots[clip_index].delete_clip()

@@ -36,15 +36,19 @@ All defaults target the local installation. The existing TCP bridge stays bound 
 
 The adapter can schedule smooth OSC gestures without requiring the model to make repeated calls:
 
-- `ableton_ramp`: one track fader, pan, send, or device parameter
+- `ableton_ramp`: one track fader, pan, send, device parameter, or the master crossfader
 - `ableton_batch_ramp`: coordinated multi-parameter movement
 - `ableton_golden_crossfade`: complementary golden-ratio track fades
+- `ableton_get_crossfader` / `ableton_set_crossfader`: Live's actual master A/B crossfader
+- `ableton_get_crossfade_assignment` / `ableton_assign_crossfade`: read or assign a track to A, neither side, or B
 - `ableton_get_gestures`: inspect scheduled and running gestures
 - `ableton_cancel_gesture` / `ableton_cancel_all_gestures`
 
 Durations may be expressed in seconds or beats and starts may be quantized to the next beat or bar. Curves include linear, eased, sine, exponential, logarithmic, Fibonacci steps, and metallic-mean families: `golden`, `golden_in/out`, `silver_in/out`, and `bronze_in/out`. Update rates are capped at 30 Hz so Live handles audio and timing while the MCP layer describes the gesture.
 
 The metallic arrivals use normalized power curves: golden `t^φ`, silver `t^(1+√2)`, and bronze `t^((3+√13)/2)`. Their complementary `*_out` forms reverse the velocity while preserving exact endpoints.
+
+The `master_crossfader` gesture target controls Live's actual crossfader over `-1..1`; it works with single and batch ramps using every supported curve. Unlike the legacy `ableton_golden_crossfade` helper, it does not rewrite track volumes.
 
 Interpolation domains may be `linear`, `log` (useful for positive frequency/time values), or `db`. In `db` mode the endpoints are specified in decibels and converted to linear amplitude before being sent to Live.
 

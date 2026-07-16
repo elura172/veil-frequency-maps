@@ -22,10 +22,13 @@ class FakeBridge:
         return ["ok"] if self.available else None
 
     def query(self, address, params=(), timeout=0.75):
+        if address == "/live/track/get/crossfade_assign":
+            return [params[0], 2]
         values = {
             "/live/song/get/tempo": [120.0],
             "/live/song/get/current_song_time": [2.5],
             "/live/song/get/signature_numerator": [4],
+            "/live/song/get/crossfader": [0.25],
         }
         return values.get(address, [0])
 
@@ -61,6 +64,25 @@ class ServerTests(unittest.TestCase):
         server = Server(bridge)
         server._emit_target({"type": "track_volume", "track_index": 2}, 1.5)
         self.assertEqual(bridge.sent[-1], ("/live/track/set/volume", [2, 1.0]))
+
+    def test_master_crossfader_gesture_is_clamped(self):
+        bridge = FakeBridge(osc=True)
+        Server(bridge)._emit_target({"type": "master_crossfader"}, -1.5)
+        self.assertEqual(bridge.sent[-1], ("/live/song/set/crossfader", [-1.0]))
+
+    def test_crossfader_tools_use_live_assignments(self):
+        bridge = FakeBridge(osc=True)
+        server = Server(bridge)
+        self.assertEqual(server.call_tool("ableton_get_crossfader", {}), {"value": 0.25})
+        self.assertEqual(
+            server.call_tool("ableton_get_crossfade_assignment", {"track_index": 3}),
+            {"track_index": 3, "assignment": "b", "value": 2},
+        )
+        server.call_tool("ableton_set_crossfader", {"value": 0.75})
+        self.assertEqual(bridge.sent[-1], ("/live/song/set/crossfader", [0.75]))
+        result = server.call_tool("ableton_assign_crossfade", {"track_index": 3, "assignment": "b"})
+        self.assertEqual(bridge.sent[-1], ("/live/track/set/crossfade_assign", [3, 2]))
+        self.assertEqual(result["value"], 2)
 
     def test_beat_duration_and_bar_quantization(self):
         server = Server(FakeBridge(osc=True))

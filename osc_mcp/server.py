@@ -30,12 +30,12 @@ def object_schema(properties=None, required=None):
 
 JSON_VALUE = {"type": ["string", "number", "integer", "boolean"]}
 TARGET_SCHEMA = object_schema({
-    "type": {"type": "string", "enum": ["track_volume", "track_pan", "track_send", "device_parameter"]},
+    "type": {"type": "string", "enum": ["track_volume", "track_pan", "track_send", "device_parameter", "master_crossfader"]},
     "track_index": {"type": "integer", "minimum": 0},
     "send_index": {"type": "integer", "minimum": 0},
     "device_index": {"type": "integer", "minimum": 0},
     "parameter_index": {"type": "integer", "minimum": 0},
-}, ["type", "track_index"])
+}, ["type"])
 CURVES = [
     "linear", "ease_in", "ease_out", "ease_in_out", "exponential",
     "logarithmic", "sine", "golden", "golden_in", "golden_out",
@@ -60,7 +60,11 @@ TOOLS = [
     {"name": "ableton_add_notes", "description": "Add MIDI notes to a Session clip.", "inputSchema": object_schema({"track_index": {"type": "integer", "minimum": 0}, "clip_index": {"type": "integer", "minimum": 0}, "notes": {"type": "array", "minItems": 1, "items": object_schema({"pitch": {"type": "integer", "minimum": 0, "maximum": 127}, "start_time": {"type": "number", "minimum": 0}, "duration": {"type": "number", "exclusiveMinimum": 0}, "velocity": {"type": "integer", "minimum": 1, "maximum": 127}, "mute": {"type": "boolean", "default": False}}, ["pitch", "start_time", "duration", "velocity"])}}, ["track_index", "clip_index", "notes"])},
     {"name": "ableton_get_device_parameters", "description": "List device parameter names and values.", "inputSchema": object_schema({"track_index": {"type": "integer", "minimum": 0}, "device_index": {"type": "integer", "minimum": 0}}, ["track_index", "device_index"])},
     {"name": "ableton_set_device_parameter", "description": "Set a device parameter value.", "inputSchema": object_schema({"track_index": {"type": "integer", "minimum": 0}, "device_index": {"type": "integer", "minimum": 0}, "parameter_index": {"type": "integer", "minimum": 0}, "value": {"type": "number"}}, ["track_index", "device_index", "parameter_index", "value"])},
-    {"name": "ableton_ramp", "description": "Schedule one smooth local fader, pan, send, or device-parameter gesture. Golden-ratio curves are supported.", "inputSchema": object_schema({"target": TARGET_SCHEMA, "from_value": {"type": "number"}, "to_value": {"type": "number"}, "duration": {"type": "number", "exclusiveMinimum": 0}, "duration_unit": {"type": "string", "enum": ["seconds", "beats"], "default": "seconds"}, "curve": {"type": "string", "enum": CURVES, "default": "golden"}, "domain": {"type": "string", "enum": ["linear", "log", "db"], "default": "linear"}, "rate_hz": {"type": "number", "minimum": 1, "maximum": 30, "default": 20}, "delay_seconds": {"type": "number", "minimum": 0, "default": 0}, "start_quantization": {"type": "string", "enum": ["none", "beat", "bar"], "default": "none"}}, ["target", "from_value", "to_value", "duration"])},
+    {"name": "ableton_get_crossfader", "description": "Get Live's master crossfader value from -1 (A) through 0 to +1 (B).", "inputSchema": object_schema()},
+    {"name": "ableton_set_crossfader", "description": "Set Live's master crossfader from -1 (A) through 0 to +1 (B).", "inputSchema": object_schema({"value": {"type": "number", "minimum": -1, "maximum": 1}}, ["value"])},
+    {"name": "ableton_get_crossfade_assignment", "description": "Get a track's crossfader assignment as A, neither side, or B.", "inputSchema": object_schema({"track_index": {"type": "integer", "minimum": 0}}, ["track_index"])},
+    {"name": "ableton_assign_crossfade", "description": "Assign a track to crossfader side A, neither side, or side B.", "inputSchema": object_schema({"track_index": {"type": "integer", "minimum": 0}, "assignment": {"type": "string", "enum": ["a", "none", "b"]}}, ["track_index", "assignment"])},
+    {"name": "ableton_ramp", "description": "Schedule one smooth local fader, pan, send, device-parameter, or master-crossfader gesture. Metallic-ratio curves are supported.", "inputSchema": object_schema({"target": TARGET_SCHEMA, "from_value": {"type": "number"}, "to_value": {"type": "number"}, "duration": {"type": "number", "exclusiveMinimum": 0}, "duration_unit": {"type": "string", "enum": ["seconds", "beats"], "default": "seconds"}, "curve": {"type": "string", "enum": CURVES, "default": "golden"}, "domain": {"type": "string", "enum": ["linear", "log", "db"], "default": "linear"}, "rate_hz": {"type": "number", "minimum": 1, "maximum": 30, "default": 20}, "delay_seconds": {"type": "number", "minimum": 0, "default": 0}, "start_quantization": {"type": "string", "enum": ["none", "beat", "bar"], "default": "none"}}, ["target", "from_value", "to_value", "duration"])},
     {"name": "ableton_batch_ramp", "description": "Schedule coordinated parameter ramps as one cancellable gesture.", "inputSchema": object_schema({"ramps": {"type": "array", "minItems": 1, "items": RAMP_SCHEMA}, "duration": {"type": "number", "exclusiveMinimum": 0}, "duration_unit": {"type": "string", "enum": ["seconds", "beats"], "default": "seconds"}, "curve": {"type": "string", "enum": CURVES, "default": "golden"}, "rate_hz": {"type": "number", "minimum": 1, "maximum": 30, "default": 20}, "delay_seconds": {"type": "number", "minimum": 0, "default": 0}, "start_quantization": {"type": "string", "enum": ["none", "beat", "bar"], "default": "none"}}, ["ramps", "duration"])},
     {"name": "ableton_golden_crossfade", "description": "Crossfade two track volumes with complementary golden curves.", "inputSchema": object_schema({"outgoing_track": {"type": "integer", "minimum": 0}, "incoming_track": {"type": "integer", "minimum": 0}, "outgoing_from": {"type": "number", "default": 1.0}, "outgoing_to": {"type": "number", "default": 0.0}, "incoming_from": {"type": "number", "default": 0.0}, "incoming_to": {"type": "number", "default": 1.0}, "duration": {"type": "number", "exclusiveMinimum": 0}, "duration_unit": {"type": "string", "enum": ["seconds", "beats"], "default": "seconds"}, "start_quantization": {"type": "string", "enum": ["none", "beat", "bar"], "default": "bar"}}, ["outgoing_track", "incoming_track", "duration"])},
     {"name": "ableton_cancel_gesture", "description": "Cancel a scheduled or running gesture.", "inputSchema": object_schema({"gesture_id": {"type": "string"}}, ["gesture_id"])},
@@ -136,6 +140,8 @@ class Server:
 
     def _emit_target(self, target, value):
         kind, track = target.get("type"), target.get("track_index")
+        if kind != "master_crossfader" and track is None:
+            raise ValueError("%s requires track_index" % kind)
         if kind == "track_volume":
             address, params = "/live/track/set/volume", [track, max(0.0, min(1.0, value))]
         elif kind == "track_pan":
@@ -148,6 +154,8 @@ class Server:
             if "device_index" not in target or "parameter_index" not in target:
                 raise ValueError("device_parameter requires device_index and parameter_index")
             address, params = "/live/device/set/parameter/value", [track, target["device_index"], target["parameter_index"], value]
+        elif kind == "master_crossfader":
+            address, params = "/live/song/set/crossfader", [max(-1.0, min(1.0, value))]
         else:
             raise ValueError("Unknown gesture target: %s" % kind)
         self.bridge.send(address, params)
@@ -228,6 +236,22 @@ class Server:
         if name == "ableton_set_device_parameter":
             p = [args["track_index"], args["device_index"], args["parameter_index"], args["value"]]
             return b.send("/live/device/set/parameter/value", p)
+        if name == "ableton_get_crossfader":
+            return {"value": float(b.query("/live/song/get/crossfader")[0])}
+        if name == "ableton_set_crossfader":
+            value = max(-1.0, min(1.0, float(args["value"])))
+            b.send("/live/song/set/crossfader", [value])
+            return {"value": value}
+        if name == "ableton_get_crossfade_assignment":
+            i = args["track_index"]
+            value = int(b.query("/live/track/get/crossfade_assign", [i])[-1])
+            labels = {0: "a", 1: "none", 2: "b"}
+            return {"track_index": i, "assignment": labels[value], "value": value}
+        if name == "ableton_assign_crossfade":
+            assignments = {"a": 0, "none": 1, "b": 2}
+            assignment = args["assignment"].lower()
+            b.send("/live/track/set/crossfade_assign", [args["track_index"], assignments[assignment]])
+            return {"track_index": args["track_index"], "assignment": assignment, "value": assignments[assignment]}
         if name == "ableton_ramp":
             duration, delay = self._gesture_timing(args)
             ramp = {key: args[key] for key in ("target", "from_value", "to_value")}
