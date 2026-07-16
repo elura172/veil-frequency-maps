@@ -6,6 +6,10 @@ Generic infrastructure lives in `osc_mcp/`; no composition is allowed to become 
 
 The generic [`Instrument OSC Modulator`](max-for-live/Instrument%20OSC%20Modulator/README.md) provides four script-built `live.remote~` slots for audio-smooth Wavetable and Operator modulation. Its `.amxd` is a deterministic artifact of the editable `.maxpat` source.
 
+The local-first `mirror_voice` engine fuses acoustic measurements, language, cadence, and silence into the six fuzzy Mirror qualities and sends them over OSC 9000. See the [canonical seed](max-for-live/Mirror%20Listener/MIRROR-VOICE-SPEC.md).
+
+Run it with `python3 -m mirror_voice`; see the [engine input contract](mirror_voice/README.md). Add `--ollama-model <local-model>` for optional LLM enrichment with automatic deterministic fallback.
+
 This project uses two Ableton Live Remote Scripts:
 
 - **AbletonOSC** is the preferred, broad Live Object Model interface over UDP `11000/11001`.

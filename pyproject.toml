@@ -9,8 +9,13 @@ description = "Project-agnostic MCP adapter and gesture engine for AbletonOSC"
 requires-python = ">=3.10"
 dependencies = []
 
+[project.optional-dependencies]
+voice = ["numpy>=1.26", "sounddevice>=0.4.6"]
+
 [project.scripts]
 ableton-osc-mcp = "osc_mcp.server:main"
+mirror-voice = "mirror_voice.__main__:main"
+mirror-voice-mic = "mirror_voice.capture:main"
 
 [tool.setuptools.packages.find]
-include = ["osc_mcp*"]
+include = ["osc_mcp*", "mirror_voice*"]

@@ -41,6 +41,17 @@ class AmxdPackageTests(unittest.TestCase):
             package(directory / "Mirror Listener.maxpat", rebuilt)
             self.assertEqual(rebuilt.read_bytes(), (directory / "Mirror Listener.amxd").read_bytes())
 
+    def test_mirror_hands_has_six_remote_lanes_and_matches_source(self):
+        root = Path(__file__).resolve().parents[1]
+        directory = root / "max-for-live" / "Mirror Hands"
+        document = json.loads((directory / "Mirror Hands.maxpat").read_text())
+        remotes = [box["box"] for box in document["patcher"]["boxes"] if box["box"].get("text") == "live.remote~ @normalized 1"]
+        self.assertEqual(len(remotes), 6)
+        with tempfile.TemporaryDirectory() as temporary:
+            rebuilt = Path(temporary) / "Mirror Hands.amxd"
+            package(directory / "Mirror Hands.maxpat", rebuilt)
+            self.assertEqual(rebuilt.read_bytes(), (directory / "Mirror Hands.amxd").read_bytes())
+
 
 if __name__ == "__main__":
     unittest.main()

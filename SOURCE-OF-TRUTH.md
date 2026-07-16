@@ -5,13 +5,14 @@ This repository is a project-agnostic Ableton control platform and a collection 
 ## Authority order
 
 1. `osc_mcp/` — generic Live connectivity, MCP tools, gesture scheduling, curves, and safety limits.
-2. `tests/` — generic infrastructure tests.
-3. `max-for-live/` — generic Max devices and versioned OSC protocols.
-4. `projects/<project_id>/spec.py` — canonical musical declaration for one independent work.
-5. `projects/<project_id>/scripts/` — deterministic transformations of that specification into Live.
-6. `projects/<project_id>/max_for_live/` — editable Max source; packaged `.amxd` files are snapshots.
-7. `projects/<project_id>/live/` — optional playable Live snapshots, derived from project source rather than treated as the only definition.
-8. Project documentation and shared reference material — human-readable intent.
+2. `mirror_voice/` — local acoustic/semantic fusion and the canonical six-quality Mirror field.
+3. `tests/` — generic infrastructure tests.
+4. `max-for-live/` — generic Max devices and versioned OSC protocols.
+5. `projects/<project_id>/spec.py` — canonical musical declaration for one independent work.
+6. `projects/<project_id>/scripts/` — deterministic transformations of that specification into Live.
+7. `projects/<project_id>/max_for_live/` — editable Max source; packaged `.amxd` files are snapshots.
+8. `projects/<project_id>/live/` — optional playable Live snapshots, derived from project source rather than treated as the only definition.
+9. Project documentation and shared reference material — human-readable intent.
 
 Backups, caches, Ableton Project Info, collected samples, `.als.als` accidents, and Python bytecode are not source and are ignored.
 
