@@ -42,7 +42,9 @@ The adapter can schedule smooth OSC gestures without requiring the model to make
 - `ableton_get_gestures`: inspect scheduled and running gestures
 - `ableton_cancel_gesture` / `ableton_cancel_all_gestures`
 
-Durations may be expressed in seconds or beats and starts may be quantized to the next beat or bar. Curves include linear, eased, sine, exponential, logarithmic, Fibonacci steps, and `golden`, `golden_in`, and `golden_out`. Update rates are capped at 30 Hz so Live handles audio and timing while the MCP layer describes the gesture.
+Durations may be expressed in seconds or beats and starts may be quantized to the next beat or bar. Curves include linear, eased, sine, exponential, logarithmic, Fibonacci steps, and metallic-mean families: `golden`, `golden_in/out`, `silver_in/out`, and `bronze_in/out`. Update rates are capped at 30 Hz so Live handles audio and timing while the MCP layer describes the gesture.
+
+The metallic arrivals use normalized power curves: golden `t^φ`, silver `t^(1+√2)`, and bronze `t^((3+√13)/2)`. Their complementary `*_out` forms reverse the velocity while preserving exact endpoints.
 
 Interpolation domains may be `linear`, `log` (useful for positive frequency/time values), or `db`. In `db` mode the endpoints are specified in decibels and converted to linear amplitude before being sent to Live.
 

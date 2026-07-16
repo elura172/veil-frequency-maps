@@ -36,7 +36,12 @@ TARGET_SCHEMA = object_schema({
     "device_index": {"type": "integer", "minimum": 0},
     "parameter_index": {"type": "integer", "minimum": 0},
 }, ["type", "track_index"])
-CURVES = ["linear", "ease_in", "ease_out", "ease_in_out", "exponential", "logarithmic", "sine", "golden", "golden_in", "golden_out", "fibonacci_steps"]
+CURVES = [
+    "linear", "ease_in", "ease_out", "ease_in_out", "exponential",
+    "logarithmic", "sine", "golden", "golden_in", "golden_out",
+    "silver_in", "silver_out", "bronze_in", "bronze_out",
+    "fibonacci_steps",
+]
 RAMP_SCHEMA = object_schema({
     "target": TARGET_SCHEMA,
     "from_value": {"type": "number"},

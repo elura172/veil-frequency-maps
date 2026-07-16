@@ -8,6 +8,8 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
+SILVER_RATIO = 1.0 + math.sqrt(2.0)
+BRONZE_RATIO = (3.0 + math.sqrt(13.0)) / 2.0
 GOLDEN_MINOR = 1.0 / (PHI * PHI)  # 0.381966...
 GOLDEN_MAJOR = 1.0 / PHI          # 0.618034...
 
@@ -34,6 +36,10 @@ def curve_value(name: str, x: float) -> float:
         "sine": lambda t: 0.5 - 0.5 * math.cos(math.pi * t),
         "golden_in": lambda t: t ** PHI,
         "golden_out": lambda t: 1.0 - (1.0 - t) ** PHI,
+        "silver_in": lambda t: t ** SILVER_RATIO,
+        "silver_out": lambda t: 1.0 - (1.0 - t) ** SILVER_RATIO,
+        "bronze_in": lambda t: t ** BRONZE_RATIO,
+        "bronze_out": lambda t: 1.0 - (1.0 - t) ** BRONZE_RATIO,
         # A monotonic two-stage curve whose structural hinge is phi^-1.
         "golden": lambda t: (
             GOLDEN_MINOR * smoothstep(t / GOLDEN_MAJOR)

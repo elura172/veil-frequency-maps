@@ -1,18 +1,48 @@
 import time
 import unittest
 
-from osc_mcp.gestures import GOLDEN_MAJOR, GestureScheduler, curve_value, shaped_value
+from osc_mcp.gestures import (
+    BRONZE_RATIO,
+    GOLDEN_MAJOR,
+    PHI,
+    SILVER_RATIO,
+    GestureScheduler,
+    curve_value,
+    shaped_value,
+)
 
 
 class CurveTests(unittest.TestCase):
     def test_all_curves_reach_endpoints(self):
-        names = ["linear", "ease_in", "ease_out", "ease_in_out", "exponential", "logarithmic", "sine", "golden", "golden_in", "golden_out", "fibonacci_steps"]
+        names = [
+            "linear", "ease_in", "ease_out", "ease_in_out", "exponential",
+            "logarithmic", "sine", "golden", "golden_in", "golden_out",
+            "silver_in", "silver_out", "bronze_in", "bronze_out",
+            "fibonacci_steps",
+        ]
         for name in names:
             self.assertAlmostEqual(curve_value(name, 0), 0, msg=name)
             self.assertAlmostEqual(curve_value(name, 1), 1, msg=name)
 
     def test_golden_curve_hinge(self):
         self.assertAlmostEqual(curve_value("golden", GOLDEN_MAJOR), 1 - GOLDEN_MAJOR, places=6)
+
+    def test_metallic_in_curves_have_ordered_patience(self):
+        golden = curve_value("golden_in", 0.5)
+        silver = curve_value("silver_in", 0.5)
+        bronze = curve_value("bronze_in", 0.5)
+        self.assertGreater(SILVER_RATIO, PHI)
+        self.assertGreater(BRONZE_RATIO, SILVER_RATIO)
+        self.assertGreater(golden, silver)
+        self.assertGreater(silver, bronze)
+
+    def test_metallic_out_curves_complement_in_curves(self):
+        for metal in ("silver", "bronze"):
+            for point in (0.0, 0.2, 0.5, 0.8, 1.0):
+                self.assertAlmostEqual(
+                    curve_value(f"{metal}_out", point),
+                    1.0 - curve_value(f"{metal}_in", 1.0 - point),
+                )
 
     def test_log_domain_uses_geometric_midpoint(self):
         self.assertAlmostEqual(shaped_value(100, 400, 0.5, "linear", "log"), 200)
