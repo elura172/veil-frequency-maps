@@ -5,3 +5,10 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# Ableton transient/project-generated material. Keep only the canonical .als.
+Veil One.als Project/Backup/
+Veil One.als Project/Ableton Project Info/
+Veil One.als Project/Samples/
+Veil One.als Project/Icon?
+*.als.als
