@@ -16,6 +16,16 @@ The engine prints its fused state and sends individual qualities plus a complete
 
 Use `--no-osc` to inspect or calibrate state output without opening a UDP socket.
 
+For a local LM Studio-compatible `/api/v1/chat` server:
+
+```sh
+python3 -m mirror_voice --local-model google/gemma-4-e2b
+```
+
+The default endpoint is `http://127.0.0.1:1234/api/v1/chat`; override it with
+`--local-url`. Only the final `message` block is parsed, so private reasoning
+blocks never enter the musical state.
+
 Optional local semantic enrichment:
 
 ```sh
