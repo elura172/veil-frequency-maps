@@ -43,4 +43,19 @@ pip install -e '.[voice]'
 python3 -m mirror_voice.capture
 ```
 
-It measures RMS, pitch/confidence, spectral centroid, onset, activity, and accumulating silence locally, then streams fused states to Mirror Hands. Transcribed text can simultaneously enter through the NDJSON engine; a future frontend may combine the two processes around a chosen local speech-to-text model.
+It measures RMS, pitch/confidence, spectral centroid, onset, activity, and accumulating silence locally, then streams fused states to Mirror Hands. Transcribed text can simultaneously enter through the NDJSON engine, or use the integrated listener below.
+
+## Speak directly to the mirror
+
+With local MLX Whisper and the local chat model running:
+
+```sh
+python3 -m mirror_voice.listen
+```
+
+This continuously sends acoustic movement, detects phrase endings, transcribes
+with the cached `mlx-community/whisper-small-mlx` model, and asks
+`google/gemma-4-e2b` for the semantic qualities. Transcription runs on a worker
+thread so acoustic control does not freeze while the models respond. Use
+`--device`, `--threshold`, `--language`, `--whisper-model`, or `--local-model`
+to override the local defaults. Press Control-C to stop.
