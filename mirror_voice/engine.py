@@ -24,6 +24,7 @@ def acoustic_qualities(frame: AcousticFrame) -> dict[str, float]:
 class MirrorVoiceEngine:
     def __init__(self, half_life_seconds: float = 0.8, semantic_weight: float = 0.56):
         self.state = MirrorState()
+        self.semantic = SemanticFrame()
         self.half_life = max(0.01, half_life_seconds)
         self.semantic_weight = clamp(semantic_weight)
         self.initialized = False
@@ -31,7 +32,11 @@ class MirrorVoiceEngine:
     def update(self, acoustic: AcousticFrame | None = None, text: str | None = None, semantic: SemanticFrame | None = None, now: float | None = None) -> MirrorState:
         now = monotonic() if now is None else now
         acoustic = acoustic or self.state.acoustic
-        semantic = semantic or analyze_text(text or "")
+        if semantic is not None:
+            self.semantic = semantic
+        elif text is not None:
+            self.semantic = analyze_text(text)
+        semantic = self.semantic
         physical = acoustic_qualities(acoustic)
         semantic_mix = self.semantic_weight * semantic.confidence
         target = {key: physical[key] * (1.0 - semantic_mix) + semantic.values[key] * semantic_mix for key in QUALITIES}
