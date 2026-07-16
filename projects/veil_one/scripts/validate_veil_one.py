@@ -7,13 +7,14 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(Path.home() / "Music/Ableton/User Library/Remote Scripts/AbletonOSC"))
 
 from client.client import AbletonOSCClient  # noqa: E402
-from scripts.build_veil_one import tcp_call  # noqa: E402
-from scripts.veil_one import (  # noqa: E402
+from projects.veil_one.scripts.build_veil_one import tcp_call  # noqa: E402
+from projects.veil_one.spec import (  # noqa: E402
     CHORUSED_VOICES,
     LENGTH_BEATS,
     LENGTH_SECONDS,
@@ -88,7 +89,7 @@ def main():
             if not fixed:
                 errors.append(f"track {track + 1} has no fixed-frequency display for {frequency} Hz")
 
-        host = ROOT / "max-for-live" / "Veil Modulator" / "Veil Modulator.amxd"
+        host = PROJECT_ROOT / "max_for_live" / "Veil Modulator" / "Veil Modulator.amxd"
         if not host.is_file() or host.read_bytes()[:4] != b"ampf":
             errors.append("Veil Modulator.amxd is missing or invalid")
 

@@ -9,15 +9,15 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(Path.home() / "Music/Ableton/User Library/Remote Scripts/AbletonOSC"))
 
 from client.client import AbletonOSCClient  # noqa: E402
 from osc_mcp.gestures import GestureScheduler  # noqa: E402
-from scripts.architecture_veil_one import set_opening_state  # noqa: E402
-from scripts.build_veil_one import tcp_call  # noqa: E402
-from scripts.veil_one import (  # noqa: E402
+from projects.veil_one.scripts.architecture_veil_one import set_opening_state  # noqa: E402
+from projects.veil_one.scripts.build_veil_one import tcp_call  # noqa: E402
+from projects.veil_one.spec import (  # noqa: E402
     AIR,
     CHORUSED_VOICES,
     FIFTHS,

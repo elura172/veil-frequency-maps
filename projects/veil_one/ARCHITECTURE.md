@@ -34,4 +34,4 @@ Veil One is a six-minute, 720-beat frequency field at 120 BPM. Sixteen fixed-fre
 - Filter motion is shallow and never closes far enough to erase a voice's fundamental.
 - The final state equals the opening state, allowing a clean replay or loop.
 
-Run `scripts/architecture_veil_one.py` to build/restore the Arrangement and opening. Run `scripts/perform_veil_one.py` to conduct the complete work from beat zero.
+Run `projects/veil_one/scripts/architecture_veil_one.py` from the repository root to build or restore the Arrangement and opening. Run `projects/veil_one/scripts/perform_veil_one.py` to conduct the complete work from beat zero.

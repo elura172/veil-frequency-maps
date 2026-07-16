@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.veil_one import (
+from projects.veil_one.spec import (
     AIR,
     CHORUSED_VOICES,
     FIFTHS,

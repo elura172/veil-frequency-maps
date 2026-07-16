@@ -1,8 +1,8 @@
-# Veil Frequency Maps — canonical Ableton system
+# Ableton OSC Gesture MCP
 
-This repository is the single source of truth for the frequency maps, Veil One composition, Max for Live source, local Ableton MCP/OSC adapter, and reproducible Live builders. Start with [SOURCE-OF-TRUTH.md](SOURCE-OF-TRUTH.md).
+This repository contains a project-agnostic local Ableton MCP/OSC control platform plus isolated composition projects. Start with [SOURCE-OF-TRUTH.md](SOURCE-OF-TRUTH.md).
 
-The compositional authority is [`scripts/veil_one.py`](scripts/veil_one.py). The checked-in Live Set is a derived, playable snapshot—not the only record of the work.
+Generic infrastructure lives in `osc_mcp/`; no composition is allowed to become a dependency of that package. Individual works live under [`projects/`](projects/README.md), each with its own specification, builders, tests, Max assets, and optional Live snapshot.
 
 This project uses two Ableton Live Remote Scripts:
 
@@ -46,22 +46,8 @@ Durations may be expressed in seconds or beats and starts may be quantized to th
 
 Interpolation domains may be `linear`, `log` (useful for positive frequency/time values), or `db`. In `db` mode the endpoints are specified in decibels and converted to linear amplitude before being sent to Live.
 
-## Veil One
+## Composition projects
 
-The complete piece is described in [VEIL-ONE-ARCHITECTURE.md](VEIL-ONE-ARCHITECTURE.md).
+- [Veil One](projects/veil_one/README.md) — sixteen-voice fixed-frequency field and six-minute golden-ratio form.
 
-```sh
-# Restore the full Arrangement spine and silent/sparse opening state
-/usr/bin/python3 scripts/architecture_veil_one.py
-
-# Restore the lattice-derived pan and amplitude LFO layer
-/usr/bin/python3 scripts/lattice_lfo_veil_one.py
-
-# Conduct the complete six-minute work from beat zero
-/usr/bin/python3 scripts/perform_veil_one.py
-
-# Read-only structural and safety validation
-/usr/bin/python3 scripts/validate_veil_one.py
-```
-
-`architecture_veil_one.py` is idempotent: it will reuse the sixteen correct Arrangement clips but refuse to overwrite unexpected Arrangement material.
+See [`projects/README.md`](projects/README.md) for the project contract and how to add a future work without coupling it to Veil One.

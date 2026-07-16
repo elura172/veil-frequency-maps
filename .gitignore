@@ -6,9 +6,9 @@ dist/
 build/
 *.egg-info/
 
-# Ableton transient/project-generated material. Keep only the canonical .als.
-Veil One.als Project/Backup/
-Veil One.als Project/Ableton Project Info/
-Veil One.als Project/Samples/
-Veil One.als Project/Icon?
+# Ableton transient/project-generated material. Keep canonical Sets explicitly.
+projects/*/live/* Project/Backup/
+projects/*/live/* Project/Ableton Project Info/
+projects/*/live/* Project/Icon?
+projects/veil_one/live/* Project/Samples/
 *.als.als
