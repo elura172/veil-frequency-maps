@@ -257,7 +257,7 @@ class Server:
         try:
             if method == "initialize":
                 requested = params.get("protocolVersion", "2025-03-26")
-                result = {"protocolVersion": requested, "capabilities": {"tools": {"listChanged": False}}, "serverInfo": {"name": "veil-ableton-osc", "version": __version__}}
+                result = {"protocolVersion": requested, "capabilities": {"tools": {"listChanged": False}}, "serverInfo": {"name": "ableton-osc-gesture-mcp", "version": __version__}}
             elif method == "ping":
                 result = {}
             elif method == "tools/list":
