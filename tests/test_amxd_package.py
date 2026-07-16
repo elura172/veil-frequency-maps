@@ -33,6 +33,14 @@ class AmxdPackageTests(unittest.TestCase):
                 (directory / "Instrument OSC Modulator.amxd").read_bytes(),
             )
 
+    def test_mirror_listener_matches_editable_source(self):
+        root = Path(__file__).resolve().parents[1]
+        directory = root / "max-for-live" / "Mirror Listener"
+        with tempfile.TemporaryDirectory() as temporary:
+            rebuilt = Path(temporary) / "Mirror Listener.amxd"
+            package(directory / "Mirror Listener.maxpat", rebuilt)
+            self.assertEqual(rebuilt.read_bytes(), (directory / "Mirror Listener.amxd").read_bytes())
+
 
 if __name__ == "__main__":
     unittest.main()
