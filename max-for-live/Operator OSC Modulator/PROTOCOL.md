@@ -1,6 +1,6 @@
 # Operator OSC Modulator protocol
 
-Status: protocol frozen; `.amxd` implementation is the next build layer.
+Status: implemented by [`../Instrument OSC Modulator`](../Instrument%20OSC%20Modulator/README.md).
 
 This is the Operator counterpart to the generic Wavetable modulator. It receives on UDP `11012`, reports on `11013`, and uses `/operator-mod/v1`. Separate ports allow both devices to coexist without address collisions.
 

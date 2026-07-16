@@ -4,6 +4,8 @@ This repository contains a project-agnostic local Ableton MCP/OSC control platfo
 
 Generic infrastructure lives in `osc_mcp/`; no composition is allowed to become a dependency of that package. Individual works live under [`projects/`](projects/README.md), each with its own specification, builders, tests, Max assets, and optional Live snapshot.
 
+The generic [`Instrument OSC Modulator`](max-for-live/Instrument%20OSC%20Modulator/README.md) provides four script-built `live.remote~` slots for audio-smooth Wavetable and Operator modulation. Its `.amxd` is a deterministic artifact of the editable `.maxpat` source.
+
 This project uses two Ableton Live Remote Scripts:
 
 - **AbletonOSC** is the preferred, broad Live Object Model interface over UDP `11000/11001`.

@@ -1,6 +1,6 @@
 # Wavetable OSC Modulator protocol
 
-Status: protocol frozen; `.amxd` implementation is the next build layer.
+Status: implemented by [`../Instrument OSC Modulator`](../Instrument%20OSC%20Modulator/README.md).
 
 The device receives semantic modulation instructions on UDP `11010` and reports state on UDP `11011`. These ports are intentionally separate from AbletonOSC (`11000/11001`). All addresses are namespaced under `/wavetable-mod/v1`.
 
