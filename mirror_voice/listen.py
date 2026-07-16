@@ -13,6 +13,7 @@ from time import monotonic
 from .capture import analyze, audio_device
 from .engine import MirrorVoiceEngine
 from .llm import LocalChatSemanticEar
+from .lexicon import analyze_text
 from .model import AcousticFrame
 from .osc import MirrorOSCSender
 
@@ -104,6 +105,9 @@ def main() -> None:
             try:
                 text = transcribe_mlx(samples, whisper_model, args.language)
                 if text:
+                    # Respond musically at Whisper speed; the slower LLM then
+                    # arrives as a semantic refinement rather than a blocker.
+                    meanings.put((text, analyze_text(text), None))
                     meanings.put((text, ear.analyze(text), None))
             except Exception as exc:
                 meanings.put(("", None, str(exc)))

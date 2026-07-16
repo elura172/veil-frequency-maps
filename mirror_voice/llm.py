@@ -56,6 +56,10 @@ class LocalChatSemanticEar:
             "model": self.model,
             "system_prompt": SYSTEM,
             "input": text,
+            "reasoning": "on",
+            "temperature": 0.1,
+            "max_output_tokens": 700,
+            "store": False,
         }).encode()
         request = Request(self.url, data=body, headers={"Content-Type": "application/json"})
         with urlopen(request, timeout=self.timeout) as response:
