@@ -178,6 +178,72 @@ Example:
 > Something silver is gathering above the center. Does that resemble what
 > you are hearing?
 
+## Companion Bridge
+
+Mirror Listener is an organ, not a mandatory personality. Its canonical
+perception must be usable by an established AI companion without replacing that
+companion's voice, memory, relationship style, or ethical boundaries.
+
+```text
+Mirror Listener canonical state
+  → Companion Bridge adapter
+  → established companion
+  → companion-native reflection or silence
+```
+
+The bridge offers several integration levels:
+
+- neutral context injection for prompt-based companions
+- MCP tools for state, events, comparison, and memory
+- WebSocket, SSE, OSC, or MQTT event subscription
+- local HTTP/webhooks for companion applications
+- NDJSON or local files for minimal personal systems
+
+Suggested MCP surface:
+
+```text
+mirror_listen_now
+mirror_get_state
+mirror_get_recent_changes
+mirror_describe_passage
+mirror_compare_passages
+mirror_mark_moment
+mirror_remember_human_association
+mirror_set_relational_mode
+```
+
+On connection, a companion may declare whether it supports continuous state or
+events, short- or long-term memory, proactive speech, technical evidence,
+synesthetic imagery, and local-only processing. Mirror Listener then reduces
+and schedules output to that capability profile.
+
+Example adapter profile:
+
+```yaml
+companion:
+  id: local-companion
+  transport: local_http
+  endpoint: http://localhost:1234/api/v1/chat
+listening:
+  mode: gentle_mirror
+  minimum_novelty: 0.62
+  reflection_frequency: sparse
+  include: [temporal_changes, recurrence, synesthesia]
+  exclude: [raw_measurements]
+relationship:
+  preserve_companion_voice: true
+  ask_before_interpreting_emotion: true
+  vocabulary_profile: profiles/shared-listening.json
+```
+
+The portable relationship profile stores the human's corrections and
+associations with confidence and explicit scope. “Amber means distance to me”
+belongs to one shared listening language, not to the universal mapper. Profiles
+must be inspectable, editable, exportable, and removable.
+
+The bridge supplies perception, evidence, change, memory references, metaphor,
+and uncertainty. The established companion decides how—or whether—to share it.
+
 ## Canonical structured state
 
 ```json
