@@ -2,6 +2,9 @@
 
 A transparent Max Audio Effect that turns Mirror/Shimmer analysis OSC into stable, visible musical state.
 
+The broader project-agnostic listening intelligence is defined in the
+[canonical Mirror Listener specification](MIRROR-LISTENER-SPEC.md).
+
 It listens on UDP `8000` and accepts:
 
 ```text
