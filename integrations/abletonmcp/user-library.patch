@@ -9,13 +9,14 @@ diff --git a/__init__.py b/__init__.py
 +                    return browser_or_item
              if hasattr(browser_or_item, 'uri') and browser_or_item.uri == uri:
                  return browser_or_item
-@@ -1131,6 +1131,14 @@ class AbletonMCP(ControlSurface):
+@@ -1131,6 +1131,15 @@ class AbletonMCP(ControlSurface):
                      browser_or_item.audio_effects,
                      browser_or_item.midi_effects
                  ]
 +
-+                # Custom devices, presets, Packs, and plug-ins live outside
-+                # the factory categories. Traverse every public browser root.
++                # Custom Max for Live devices and presets live outside the
++                # factory categories. Include Live's indexed User Library so
++                # callers can load them by their stable device:* URI too.
 +                for root_name in ('user_library', 'packs', 'max_for_live', 'plugins', 'current_project'):
 +                    if hasattr(browser_or_item, root_name):
 +                        categories.append(getattr(browser_or_item, root_name))
