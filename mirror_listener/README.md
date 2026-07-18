@@ -9,6 +9,13 @@ uncertain recurrence against stable passage IDs. Each quality retains the v1
 `trend` and also publishes `short_trend`, `long_trend`, `recent_min`, and
 `recent_max`.
 
+The deterministic synesthetic mapper reflects ten explicitly metaphorical
+domains: color (with luminosity and saturation), texture, temperature,
+direction, element, weather, landscape, scent, taste, and creature-motion.
+Every domain publishes a primary and secondary image, normalized competing
+weights, acoustic/perceptual evidence labels, and confidence. Silence produces
+zero metaphor confidence; personal vocabulary is applied later by the bridge.
+
 BlackHole or interface input:
 
 ```sh

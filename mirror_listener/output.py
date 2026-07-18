@@ -48,6 +48,9 @@ class ListenerOutput:
             elif event.get("type") == "passage":
                 values = [event["passage_id"], event["confidence"]]
                 self.socket.sendto(osc_message("/mirror/listener/v1/passage", values), self.address)
+        for domain, image in frame.synesthesia.items():
+            self.socket.sendto(osc_message("/mirror/listener/v1/synesthesia",
+                                          [domain, image["primary"], image["confidence"]]), self.address)
         image = frame.numeric_image
         self.socket.sendto(osc_message("/mirror/listener/v1/numeric_image", [image.value, image.confidence, image.descriptor]), self.address)
 

@@ -142,6 +142,12 @@ Synesthetic attributes are probabilistic metaphors, not fixed scientific
 correspondences. Each includes a primary image, optional secondary image,
 weights, evidence, and confidence.
 
+The canonical mapper is deterministic: identical perceptual evidence yields
+identical competing weights. Confidence falls to zero for digital silence.
+Scent and taste are intentionally given lower confidence ceilings than more
+direct spatial or brightness metaphors. Relationship-specific associations are
+applied only after this universal state is formed.
+
 Domains:
 
 - color family, luminosity, and saturation

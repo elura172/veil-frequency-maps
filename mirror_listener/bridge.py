@@ -72,11 +72,19 @@ class CompanionBridge:
         quality = frame.state[strongest]
         direction = "gathering" if quality.trend >= 0 else "receding"
         if self.mode == "poetic_companion":
-            return (frame.numeric_image.descriptor.capitalize() + ".", "metaphor")
+            weather = frame.synesthesia.get("weather", {}).get("primary", "weather")
+            landscape = frame.synesthesia.get("landscape", {}).get("primary", "distance")
+            texture = frame.synesthesia.get("texture", {}).get("primary", "soft grain")
+            creature = frame.synesthesia.get("creature_motion", {}).get("primary", "breathing")
+            text = (f"{frame.numeric_image.descriptor.capitalize()}. {weather.capitalize()} over "
+                    f"{landscape}; {texture}, {creature}.")
+            return (text, "metaphor")
         if self.mode == "analytical_ear":
             return (f"{strongest.capitalize()} is {direction} at {quality.value:.2f} with confidence {quality.confidence:.2f}.", "inference")
         color = frame.synesthesia.get("color", {}).get("primary")
-        suffix = f" The field suggests {color}." if color else ""
+        gesture = frame.synesthesia.get("direction", {}).get("primary")
+        images = " and ".join(item for item in (color, gesture) if item)
+        suffix = f" The field suggests {images}." if images else ""
         return (f"{strongest.capitalize()} is {direction}.{suffix}", "inference")
 
     def reflect(self, frame: ListenerFrame, invited: bool = False) -> dict:

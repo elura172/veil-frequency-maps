@@ -11,6 +11,7 @@ from mirror_listener.model import CORE_QUALITIES
 from mirror_listener.output import osc_message
 from mirror_listener.perception import MirrorMusicEar
 from mirror_listener.session import SessionStore
+from mirror_listener.synesthesia import SynestheticMapper
 
 
 RATE = 16000
@@ -201,3 +202,39 @@ def test_session_memory_rejects_unknown_or_malformed_data(tmp_path):
     path.write_text('{"version":"mirror-listener/session-v1","passages":{}}', encoding="utf-8")
     with np.testing.assert_raises_regex(ValueError, "malformed"):
         SessionStore(path).load_into(TemporalMemory())
+
+
+def test_synesthetic_mapper_covers_all_domains_with_visible_uncertainty():
+    qualities = {name: .2 for name in CORE_QUALITIES}
+    qualities.update(brightness=.95, shimmer=.8, spaciousness=.8, motion=.55)
+    feature = frame_for(np.column_stack([
+        .15 * np.sin(2 * np.pi * 4200 * TIME),
+        .15 * np.sin(2 * np.pi * 5100 * TIME),
+    ]))
+    result = SynestheticMapper().map(qualities, feature, .8)
+    assert set(result) == {"color", "texture", "temperature", "direction", "element",
+                           "weather", "landscape", "scent", "taste", "creature_motion"}
+    for image in result.values():
+        assert image["primary"] in image["weights"]
+        assert image["secondary"] in image["weights"]
+        assert abs(sum(image["weights"].values()) - 1.0) < 1e-9
+        assert image["evidence"]
+        assert 0.0 <= image["confidence"] <= 1.0
+    assert result["color"]["primary"] == "silver"
+
+
+def test_synesthetic_mapping_is_deterministic_and_silent_when_audio_is_silent():
+    qualities = {name: .0 for name in CORE_QUALITIES}
+    feature = frame_for(np.zeros((N, 2), dtype=np.float32))
+    mapper = SynestheticMapper()
+    first = mapper.map(qualities, feature, .9)
+    second = mapper.map(qualities, feature, .9)
+    assert first == second
+    assert all(image["confidence"] == 0.0 for image in first.values())
+
+
+def test_poetic_companion_draws_from_the_expanded_imagination():
+    result = CompanionBridge("poetic_companion").reflect(bridge_frame())
+    observation = result["observation"].lower()
+    assert result["register"] == "metaphor"
+    assert any(image["primary"] in observation for image in bridge_frame().synesthesia.values())

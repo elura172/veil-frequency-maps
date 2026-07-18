@@ -4,6 +4,8 @@ from .model import CORE_QUALITIES, FeatureFrame, ListenerFrame, Quality
 from .perception import MirrorMusicEar
 from .bridge import CompanionBridge, RELATIONAL_MODES, VocabularyProfile
 from .session import SessionStore
+from .synesthesia import SynestheticMapper
 
 __all__ = ["CORE_QUALITIES", "CompanionBridge", "FeatureFrame", "ListenerFrame",
-           "MirrorMusicEar", "Quality", "RELATIONAL_MODES", "SessionStore", "VocabularyProfile"]
+           "MirrorMusicEar", "Quality", "RELATIONAL_MODES", "SessionStore",
+           "SynestheticMapper", "VocabularyProfile"]

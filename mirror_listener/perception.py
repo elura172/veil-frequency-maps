@@ -6,6 +6,7 @@ import math
 from .language import number_words, poetic_descriptor
 from .memory import TemporalMemory
 from .model import CORE_QUALITIES, FeatureFrame, ListenerFrame, NumericImage, Quality, clamp
+from .synesthesia import SynestheticMapper
 
 
 def _entropy(values: list[float]) -> float:
@@ -30,6 +31,7 @@ class MirrorMusicEar:
         self.number_value = 0.0
         self.last_events = {name: -1e9 for name in CORE_QUALITIES}
         self.memory = TemporalMemory(passage_seconds=passage_seconds)
+        self.synesthetic_mapper = SynestheticMapper()
 
     def _pulse(self) -> float:
         if len(self.onsets) < 12:
@@ -129,18 +131,7 @@ class MirrorMusicEar:
             self.number_value = candidate
         number = max(0, min(99, round(self.number_value)))
 
-        color = "indigo" if self.values["spaciousness"] > .6 else "amber" if self.values["warmth"] > .55 else "silver" if self.values["shimmer"] > .5 else "charcoal"
-        texture = "smoked glass" if self.values["shimmer"] + self.values["tension"] > 1.0 else "velvet" if self.values["warmth"] > .5 else "weathered stone" if self.values["weight"] > .45 else "fine mist"
-        element_weights = {
-            "earth": self.values["weight"], "water": self.values["motion"] * self.values["warmth"],
-            "air": self.values["spaciousness"] + self.values["shimmer"], "fire": self.values["energy"] * self.values["tension"],
-        }
-        total = max(sum(element_weights.values()), 1e-9)
-        synesthesia = {
-            "color": {"primary": color, "confidence": confidence * .72},
-            "texture": {"primary": texture, "confidence": confidence * .64},
-            "element": {name: value / total for name, value in element_weights.items()},
-        }
+        synesthesia = self.synesthetic_mapper.map(self.values, features, confidence)
         numeric = NumericImage(number, number_words(number), poetic_descriptor(number, self.values), confidence * .78)
         return ListenerFrame(time=now, source=self.source, state=state, features=features,
                              events=events, synesthesia=synesthesia, numeric_image=numeric, memory=memory)
