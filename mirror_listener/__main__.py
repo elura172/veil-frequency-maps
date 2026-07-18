@@ -5,6 +5,7 @@ import queue
 import time
 import wave
 
+from .bridge import CompanionBridge, RELATIONAL_MODES, VocabularyProfile
 from .features import analyze_stereo
 from .output import ListenerOutput
 from .perception import MirrorMusicEar
@@ -47,9 +48,15 @@ def main() -> None:
     parser.add_argument("--no-osc", action="store_true")
     parser.add_argument("--no-ndjson", action="store_true")
     parser.add_argument("--realtime-file", action="store_true", help="pace WAV analysis at wall-clock speed")
+    parser.add_argument("--mode", choices=RELATIONAL_MODES, default="silent_witness",
+                        help="companion bridge relational mode (silence is the default)")
+    parser.add_argument("--profile", help="inspectable JSON shared-vocabulary profile")
+    parser.add_argument("--invited", action="store_true", help="human has invited reflections for this run")
     args = parser.parse_args()
     source_name = "file:" + args.file if args.file else "audio:" + str(args.device)
     ear = MirrorMusicEar(source_name)
+    profile = VocabularyProfile.load(args.profile) if args.profile else None
+    bridge = CompanionBridge(args.mode, profile)
     output = ListenerOutput(args.host, args.port, not args.no_osc, not args.no_ndjson)
     previous_spectrum, previous_rms, next_emit = None, 0.0, 0.0
 
@@ -58,6 +65,7 @@ def main() -> None:
         features, previous_spectrum = analyze_stereo(samples, rate, previous_spectrum, previous_rms)
         previous_rms = features.rms
         frame = ear.update(features, heard_at)
+        frame.reflection = bridge.reflect(frame, invited=args.invited)
         if heard_at >= next_emit:
             output.send(frame)
             next_emit = heard_at + 1.0 / max(.1, args.emit_hz)

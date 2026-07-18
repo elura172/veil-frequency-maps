@@ -25,3 +25,33 @@ NDJSON is written to stdout. Compact OSC is sent to UDP `8000`; complete JSON is
 not placed in one UDP packet. Passage and return events use
 `/mirror/listener/v1/passage` and `/mirror/listener/v1/recurrence`. No LLM is
 used by the real-time perception path.
+
+## Companion Bridge
+
+The bridge supplies structured context without replacing an established
+companion's personality. Silence remains the default:
+
+```sh
+python3 -m mirror_listener --device "BlackHole 2ch" --mode gentle_mirror
+```
+
+Modes are `silent_witness`, `gentle_mirror`, `shared_attention`,
+`curious_listener`, `poetic_companion`, `analytical_ear`, and `memory_keeper`.
+Confidence, novelty, meaningful events, recurrence, and a per-mode cooldown gate
+all unsolicited reflections. `--invited` records that the human has invited
+reflection for this run.
+
+An optional, inspectable JSON profile can adapt vocabulary without changing the
+canonical perceptual mapping:
+
+```json
+{
+  "id": "shared-listening",
+  "associations": {"amber": "distance"},
+  "notes": [{"association": "amber means distance", "scope": "this relationship"}]
+}
+```
+
+Copy [`profiles/shared-listening.example.json`](profiles/shared-listening.example.json)
+and pass the edited file with `--profile`. Profiles are plain
+files: editable, exportable, and removable. They never trigger network access.

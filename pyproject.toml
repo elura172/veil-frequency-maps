@@ -22,3 +22,6 @@ mirror-music-listen = "mirror_listener.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["osc_mcp*", "mirror_voice*", "mirror_listener*"]
+
+[tool.setuptools.package-data]
+mirror_listener = ["profiles/*.json"]

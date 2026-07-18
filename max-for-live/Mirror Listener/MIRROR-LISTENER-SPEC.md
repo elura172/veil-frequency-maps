@@ -268,6 +268,13 @@ must be inspectable, editable, exportable, and removable.
 The bridge supplies perception, evidence, change, memory references, metaphor,
 and uncertainty. The established companion decides how—or whether—to share it.
 
+The canonical `reflection` object is an adapter decision rather than generated
+personality. It publishes `action` (`silence` or `offer_context`), gating reason,
+mode, observation register (`inference`, `metaphor`, or `memory`), evidence,
+uncertainty, optional invitation, active vocabulary-profile ID, and
+`preserve_companion_voice: true`. This object belongs in structured output; an
+established companion remains responsible for its own final wording.
+
 ## Canonical structured state
 
 ```json

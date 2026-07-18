@@ -69,6 +69,7 @@ class ListenerFrame:
     synesthesia: dict = field(default_factory=dict)
     numeric_image: NumericImage = field(default_factory=NumericImage)
     memory: dict = field(default_factory=dict)
+    reflection: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)

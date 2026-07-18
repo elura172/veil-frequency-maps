@@ -1,8 +1,10 @@
 import math
+from pathlib import Path
 
 import numpy as np
 
 from mirror_listener.features import analyze_stereo
+from mirror_listener.bridge import CompanionBridge, VocabularyProfile
 from mirror_listener.language import number_words, poetic_descriptor
 from mirror_listener.memory import TemporalMemory
 from mirror_listener.model import CORE_QUALITIES
@@ -111,3 +113,58 @@ def test_passage_recurrence_has_stable_remembered_id_and_uncertainty():
     assert recurrence[0]["similarity"] == 1.0
     assert 0.0 < recurrence[0]["confidence"] <= .8
     assert memory.passages[-1]["id"] == "passage-0002"
+
+
+def bridge_frame(now=20.0):
+    tone = .2 * np.sin(2 * np.pi * 660 * TIME)
+    frame = MirrorMusicEar().update(frame_for(np.column_stack([tone, tone])), now)
+    frame.state["novelty"].value = .8
+    frame.state["brightness"].trend = .7
+    return frame
+
+
+def test_silent_witness_never_speaks_and_gentle_mirror_is_sparse():
+    frame = bridge_frame()
+    assert CompanionBridge("silent_witness").reflect(frame)["action"] == "silence"
+
+    bridge = CompanionBridge("gentle_mirror")
+    first = bridge.reflect(frame)
+    assert first["action"] == "offer_context"
+    frame.time += 1.0
+    second = bridge.reflect(frame)
+    assert second == {"mode": "gentle_mirror", "action": "silence", "profile": "default", "reason": "cooldown"}
+
+
+def test_companion_context_preserves_voice_and_marks_uncertainty():
+    result = CompanionBridge("curious_listener").reflect(bridge_frame())
+    assert result["preserve_companion_voice"] is True
+    assert result["invitation"] == "What do you notice there?"
+    assert result["register"] in {"inference", "memory", "metaphor"}
+    assert 0.0 <= result["uncertainty"] <= 1.0
+
+
+def test_vocabulary_profile_is_scoped_and_applied_without_changing_state(tmp_path):
+    path = tmp_path / "profile.json"
+    path.write_text('{"id":"ours","associations":{"amber":"distance"}}', encoding="utf-8")
+    profile = VocabularyProfile.load(path)
+    frame = bridge_frame()
+    frame.synesthesia["color"]["primary"] = "amber"
+    result = CompanionBridge("gentle_mirror", profile).reflect(frame)
+    assert "distance" in result["observation"].lower()
+    assert result["profile"] == "ours"
+    assert frame.synesthesia["color"]["primary"] == "amber"
+
+
+def test_example_vocabulary_profile_is_loadable():
+    path = Path(__file__).parents[1] / "mirror_listener" / "profiles" / "shared-listening.example.json"
+    assert VocabularyProfile.load(path).id == "shared-listening-example"
+
+
+def test_memory_keeper_only_surfaces_an_actual_recurrence():
+    frame = bridge_frame()
+    bridge = CompanionBridge("memory_keeper")
+    assert bridge.reflect(frame)["reason"] == "no_recurrence"
+    frame.memory["recurrence"] = {"passage_id": "passage-0001", "similarity": .9, "confidence": .7}
+    result = bridge.reflect(frame)
+    assert result["action"] == "offer_context"
+    assert "passage-0001" in result["observation"]

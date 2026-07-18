@@ -1,0 +1,15 @@
+{
+  "id": "shared-listening-example",
+  "associations": {
+    "amber": "distance",
+    "fine mist": "soft memory"
+  },
+  "notes": [
+    {
+      "association": "amber means distance",
+      "scope": "this relationship",
+      "confidence": 0.8,
+      "source": "human correction"
+    }
+  ]
+}
