@@ -78,3 +78,23 @@ summaries, extrema, and deliberately added annotations—never audio, FFT data,
 or raw acoustic frames. Delete the file to remove the memory. Integrations can
 call `ear.memory.mark_moment(time, label, note)` before saving to attach a
 human-named moment to the current derived state.
+
+## Local Companion API
+
+The optional JSON API binds only to localhost and starts only when requested:
+
+```sh
+python3 -m mirror_listener --device "BlackHole 2ch" --api-port 8766
+```
+
+Endpoints:
+
+- `GET /health`
+- `GET /v1/state`
+- `GET /v1/recent-changes`
+- `POST /v1/mark` with `{"label":"silver opening","note":"remember this"}`
+- `POST /v1/compare` with `{"left":"passage-0001","right":"passage-0002"}`
+- `POST /v1/mode` with `{"mode":"gentle_mirror"}`
+
+Requests are limited to 64 KiB. The API cannot bind to a non-loopback address
+and exposes derived perception only, never audio.

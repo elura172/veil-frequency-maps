@@ -1,7 +1,10 @@
 import math
 from pathlib import Path
+import json
+from urllib.request import Request, urlopen
 
 import numpy as np
+import pytest
 
 from mirror_listener.features import analyze_stereo
 from mirror_listener.bridge import CompanionBridge, VocabularyProfile
@@ -12,6 +15,7 @@ from mirror_listener.output import osc_message
 from mirror_listener.perception import MirrorMusicEar
 from mirror_listener.session import SessionStore
 from mirror_listener.synesthesia import SynestheticMapper
+from mirror_listener.api import CompanionState, start_api
 
 
 RATE = 16000
@@ -238,3 +242,42 @@ def test_poetic_companion_draws_from_the_expanded_imagination():
     observation = result["observation"].lower()
     assert result["register"] == "metaphor"
     assert any(image["primary"] in observation for image in bridge_frame().synesthesia.values())
+
+
+def test_companion_state_marks_compares_and_changes_mode():
+    memory = TemporalMemory(passage_seconds=2.0)
+    first = {name: .2 for name in CORE_QUALITIES}
+    second = {name: .7 for name in CORE_QUALITIES}
+    for now, values in ((0.0, first), (1.0, first), (2.0, first),
+                        (3.0, second), (4.0, second)):
+        memory.update(now, values, .8)
+    bridge = CompanionBridge()
+    state = CompanionState(memory, bridge)
+    mark = state.mark("the threshold", "human annotation")
+    comparison = state.compare("passage-0001", "passage-0002")
+    assert mark["label"] == "the threshold"
+    assert comparison["similarity"] < 1.0
+    assert state.set_mode("analytical_ear") == {"mode": "analytical_ear"}
+    assert bridge.mode == "analytical_ear"
+
+
+def test_local_companion_api_health_state_and_loopback_boundary():
+    state = CompanionState(TemporalMemory(), CompanionBridge())
+    with np.testing.assert_raises_regex(ValueError, "localhost"):
+        start_api(state, host="0.0.0.0", port=0)
+    try:
+        server = start_api(state, port=0)
+    except PermissionError:
+        pytest.skip("test sandbox forbids localhost socket binding")
+    try:
+        root = f"http://127.0.0.1:{server.server_port}"
+        health = json.load(urlopen(root + "/health", timeout=2))
+        waiting = json.load(urlopen(root + "/v1/state", timeout=2))
+        request = Request(root + "/v1/mode", data=b'{"mode":"gentle_mirror"}',
+                          headers={"Content-Type": "application/json"}, method="POST")
+        changed = json.load(urlopen(request, timeout=2))
+        assert health == {"healthy": True, "local_only": True}
+        assert waiting == {"status": "waiting_for_audio"}
+        assert changed == {"mode": "gentle_mirror"}
+    finally:
+        server.shutdown(); server.server_close()

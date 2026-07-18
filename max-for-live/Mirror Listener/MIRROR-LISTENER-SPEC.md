@@ -229,6 +229,11 @@ The bridge offers several integration levels:
 - local HTTP/webhooks for companion applications
 - NDJSON or local files for minimal personal systems
 
+The reference local JSON API is opt-in, loopback-only, and exposes derived
+state rather than audio. Its v1 surface provides health, current state, recent
+changes, human moment marking, stable-passage comparison, and relational-mode
+selection. Request bodies are bounded; remote interface binding is rejected.
+
 Suggested MCP surface:
 
 ```text

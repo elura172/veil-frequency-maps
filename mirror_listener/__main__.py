@@ -6,6 +6,7 @@ import time
 import wave
 
 from .bridge import CompanionBridge, RELATIONAL_MODES, VocabularyProfile
+from .api import CompanionState, start_api
 from .features import analyze_stereo
 from .output import ListenerOutput
 from .perception import MirrorMusicEar
@@ -54,6 +55,8 @@ def main() -> None:
     parser.add_argument("--profile", help="inspectable JSON shared-vocabulary profile")
     parser.add_argument("--invited", action="store_true", help="human has invited reflections for this run")
     parser.add_argument("--session-file", help="opt in to local derived-memory persistence (never audio)")
+    parser.add_argument("--api-port", type=int, default=0,
+                        help="enable the localhost Companion API on this port (for example 8766)")
     args = parser.parse_args()
     source_name = "file:" + args.file if args.file else "audio:" + str(args.device)
     ear = MirrorMusicEar(source_name)
@@ -63,6 +66,8 @@ def main() -> None:
     saved_passages = len(ear.memory.passages)
     profile = VocabularyProfile.load(args.profile) if args.profile else None
     bridge = CompanionBridge(args.mode, profile)
+    companion_state = CompanionState(ear.memory, bridge, session_store)
+    api_server = start_api(companion_state, port=args.api_port) if args.api_port else None
     output = ListenerOutput(args.host, args.port, not args.no_osc, not args.no_ndjson)
     previous_spectrum, previous_rms, next_emit = None, 0.0, 0.0
 
@@ -72,6 +77,7 @@ def main() -> None:
         previous_rms = features.rms
         frame = ear.update(features, heard_at)
         frame.reflection = bridge.reflect(frame, invited=args.invited)
+        companion_state.update(frame)
         if heard_at >= next_emit:
             output.send(frame)
             next_emit = heard_at + 1.0 / max(.1, args.emit_hz)
@@ -107,6 +113,9 @@ def main() -> None:
     except KeyboardInterrupt:
         pass
     finally:
+        if api_server:
+            api_server.shutdown()
+            api_server.server_close()
         if session_store:
             session_store.save(ear.memory)
         output.close()
