@@ -4,6 +4,7 @@ from collections import deque
 import math
 
 from .language import number_words, poetic_descriptor
+from .memory import TemporalMemory
 from .model import CORE_QUALITIES, FeatureFrame, ListenerFrame, NumericImage, Quality, clamp
 
 
@@ -16,7 +17,8 @@ def _entropy(values: list[float]) -> float:
 class MirrorMusicEar:
     """Stateful deterministic mapping from stereo evidence to musical perception."""
 
-    def __init__(self, source: str = "unknown", half_life: float = 1.2, number_half_life: float = 3.5):
+    def __init__(self, source: str = "unknown", half_life: float = 1.2, number_half_life: float = 3.5,
+                 passage_seconds: float = 12.0):
         self.source = source
         self.half_life = max(.05, half_life)
         self.number_half_life = max(.2, number_half_life)
@@ -27,6 +29,7 @@ class MirrorMusicEar:
         self.last_time: float | None = None
         self.number_value = 0.0
         self.last_events = {name: -1e9 for name in CORE_QUALITIES}
+        self.memory = TemporalMemory(passage_seconds=passage_seconds)
 
     def _pulse(self) -> float:
         if len(self.onsets) < 12:
@@ -103,6 +106,17 @@ class MirrorMusicEar:
                                "strength": clamp(abs(trend)), "confidence": confidence})
                 self.last_events[name] = now
 
+        memory, memory_events = self.memory.update(
+            now, self.values, sum(quality.confidence for quality in state.values()) / len(state)
+        )
+        events.extend(memory_events)
+        for name, quality in state.items():
+            moment = memory["moment"]
+            gesture = memory["gesture"]
+            quality.short_trend = max(-1.0, min(1.0, (quality.value - moment["state"][name]) / 2.0))
+            quality.long_trend = max(-1.0, min(1.0, (quality.value - gesture["state"][name]) / 12.0))
+            quality.recent_min, quality.recent_max = gesture["range"][name]
+
         composite = (
             self.values["energy"] * .14 + self.values["brightness"] * .10 + self.values["warmth"] * .08 +
             self.values["shimmer"] * .09 + self.values["motion"] * .09 + self.values["density"] * .09 +
@@ -129,4 +143,4 @@ class MirrorMusicEar:
         }
         numeric = NumericImage(number, number_words(number), poetic_descriptor(number, self.values), confidence * .78)
         return ListenerFrame(time=now, source=self.source, state=state, features=features,
-                             events=events, synesthesia=synesthesia, numeric_image=numeric)
+                             events=events, synesthesia=synesthesia, numeric_image=numeric, memory=memory)

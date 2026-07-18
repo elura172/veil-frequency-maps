@@ -311,6 +311,8 @@ perceptual endpoints add:
 /mirror/listener/v1/event <quality> <verb> <strength> <confidence>
 /mirror/listener/v1/synesthesia <domain> <primary> <confidence>
 /mirror/listener/v1/numeric_image <value> <confidence> <descriptor>
+/mirror/listener/v1/passage <passage_id> <confidence>
+/mirror/listener/v1/recurrence <remembered_passage_id> <similarity> <confidence>
 /mirror/listener/v1/transport <listening|silent|paused>
 ```
 

@@ -39,7 +39,15 @@ class ListenerOutput:
         for name, quality in frame.state.items():
             self.socket.sendto(osc_message("/mirror/listener/v1/quality", [name, quality.value, quality.trend, quality.confidence]), self.address)
         for event in frame.events:
-            self.socket.sendto(osc_message("/mirror/listener/v1/event", [event["quality"], event["verb"], event["strength"], event["confidence"]]), self.address)
+            if "quality" in event:
+                values = [event["quality"], event["verb"], event["strength"], event["confidence"]]
+                self.socket.sendto(osc_message("/mirror/listener/v1/event", values), self.address)
+            elif event.get("type") == "recurrence":
+                values = [event["passage_id"], event["similarity"], event["confidence"]]
+                self.socket.sendto(osc_message("/mirror/listener/v1/recurrence", values), self.address)
+            elif event.get("type") == "passage":
+                values = [event["passage_id"], event["confidence"]]
+                self.socket.sendto(osc_message("/mirror/listener/v1/passage", values), self.address)
         image = frame.numeric_image
         self.socket.sendto(osc_message("/mirror/listener/v1/numeric_image", [image.value, image.confidence, image.descriptor]), self.address)
 

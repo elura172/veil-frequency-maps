@@ -44,6 +44,10 @@ class Quality:
     value: float = 0.0
     trend: float = 0.0
     confidence: float = 0.0
+    short_trend: float = 0.0
+    long_trend: float = 0.0
+    recent_min: float = 0.0
+    recent_max: float = 0.0
 
 
 @dataclass
@@ -64,6 +68,7 @@ class ListenerFrame:
     events: list[dict] = field(default_factory=list)
     synesthesia: dict = field(default_factory=dict)
     numeric_image: NumericImage = field(default_factory=NumericImage)
+    memory: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)

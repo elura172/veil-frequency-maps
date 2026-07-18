@@ -4,6 +4,7 @@ import numpy as np
 
 from mirror_listener.features import analyze_stereo
 from mirror_listener.language import number_words, poetic_descriptor
+from mirror_listener.memory import TemporalMemory
 from mirror_listener.model import CORE_QUALITIES
 from mirror_listener.output import osc_message
 from mirror_listener.perception import MirrorMusicEar
@@ -82,3 +83,31 @@ def test_digital_silence_does_not_invent_perception():
     assert all(quality.confidence == 0.0 for quality in result.state.values())
     assert result.events == []
     assert result.numeric_image.value == 0
+
+
+def test_quality_state_includes_nested_temporal_evidence():
+    tone = .2 * np.sin(2 * np.pi * 440 * TIME)
+    ear = MirrorMusicEar()
+    ear.update(frame_for(np.column_stack([tone, tone])), 0.0)
+    result = ear.update(frame_for(np.column_stack([tone * .5, tone * .5])), 1.0)
+
+    brightness = result.state["brightness"]
+    assert brightness.recent_min <= brightness.value <= brightness.recent_max
+    assert -1.0 <= brightness.short_trend <= 1.0
+    assert -1.0 <= brightness.long_trend <= 1.0
+    assert set(result.memory) == {"moment", "gesture", "passage", "session", "recurrence"}
+
+
+def test_passage_recurrence_has_stable_remembered_id_and_uncertainty():
+    memory = TemporalMemory(passage_seconds=2.0)
+    state = {name: .25 for name in CORE_QUALITIES}
+    emitted = []
+    for now in (0.0, 1.0, 2.0, 3.0, 4.0):
+        _, events = memory.update(now, state, .8)
+        emitted.extend(events)
+
+    recurrence = [event for event in emitted if event["type"] == "recurrence"]
+    assert recurrence[0]["passage_id"] == "passage-0001"
+    assert recurrence[0]["similarity"] == 1.0
+    assert 0.0 < recurrence[0]["confidence"] <= .8
+    assert memory.passages[-1]["id"] == "passage-0002"
