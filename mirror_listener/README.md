@@ -55,3 +55,19 @@ canonical perceptual mapping:
 Copy [`profiles/shared-listening.example.json`](profiles/shared-listening.example.json)
 and pass the edited file with `--profile`. Profiles are plain
 files: editable, exportable, and removable. They never trigger network access.
+
+## Optional session memory
+
+Persistence is off by default. To let passage memories and human annotations
+survive restarts, explicitly provide a local file:
+
+```sh
+python3 -m mirror_listener --device "BlackHole 2ch" \
+  --mode memory_keeper --session-file ~/.mirror-listener/our-session.json
+```
+
+Writes are atomic. The versioned file contains only derived passage-quality
+summaries, extrema, and deliberately added annotations—never audio, FFT data,
+or raw acoustic frames. Delete the file to remove the memory. Integrations can
+call `ear.memory.mark_moment(time, label, note)` before saving to attach a
+human-named moment to the current derived state.

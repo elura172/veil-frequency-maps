@@ -28,6 +28,48 @@ class TemporalMemory:
         self.segment: list[tuple[float, dict[str, float], float]] = []
         self.segment_started: float | None = None
         self.extrema = {name: {"min": 1.0, "max": 0.0} for name in CORE_QUALITIES}
+        self.annotations: list[dict] = []
+
+    def mark_moment(self, now: float, label: str, note: str = "") -> dict:
+        """Remember a human-named moment using derived state only."""
+        current = self.frames[-1][1] if self.frames else {name: 0.0 for name in CORE_QUALITIES}
+        annotation = {
+            "id": f"mark-{len(self.annotations) + 1:04d}",
+            "time": float(now),
+            "label": str(label),
+            "note": str(note),
+            "state": dict(current),
+        }
+        self.annotations.append(annotation)
+        return annotation
+
+    def export_session(self) -> dict:
+        return {
+            "version": "mirror-listener/session-v1",
+            "passages": self.passages,
+            "extrema": self.extrema,
+            "annotations": self.annotations,
+        }
+
+    def restore_session(self, data: dict) -> None:
+        if data.get("version") != "mirror-listener/session-v1":
+            raise ValueError("unsupported Mirror Listener session version")
+        passages = data.get("passages", [])
+        annotations = data.get("annotations", [])
+        extrema = data.get("extrema", {})
+        if not isinstance(passages, list) or not isinstance(annotations, list) or not isinstance(extrema, dict):
+            raise ValueError("malformed Mirror Listener session")
+        for passage in passages:
+            if not isinstance(passage, dict) or not all(name in passage.get("state", {}) for name in CORE_QUALITIES):
+                raise ValueError("malformed passage in Mirror Listener session")
+        self.passages = passages
+        self.annotations = annotations
+        for name in CORE_QUALITIES:
+            saved = extrema.get(name, {})
+            self.extrema[name] = {
+                "min": float(saved.get("min", 1.0)),
+                "max": float(saved.get("max", 0.0)),
+            }
 
     def _window(self, now: float, seconds: float) -> list[dict[str, float]]:
         return [state for at, state, _ in self.frames if at >= now - seconds]
@@ -94,7 +136,8 @@ class TemporalMemory:
             "gesture": self._summary(now, 12.0),
             "passage": {"start": self.segment_started, "state": current_passage,
                         "samples": len(self.segment)},
-            "session": {"passages": len(self.passages), "extrema": self.extrema},
+            "session": {"passages": len(self.passages), "annotations": len(self.annotations),
+                        "extrema": self.extrema},
             "recurrence": recurrence,
         }
         return memory, events

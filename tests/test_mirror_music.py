@@ -10,6 +10,7 @@ from mirror_listener.memory import TemporalMemory
 from mirror_listener.model import CORE_QUALITIES
 from mirror_listener.output import osc_message
 from mirror_listener.perception import MirrorMusicEar
+from mirror_listener.session import SessionStore
 
 
 RATE = 16000
@@ -168,3 +169,35 @@ def test_memory_keeper_only_surfaces_an_actual_recurrence():
     result = bridge.reflect(frame)
     assert result["action"] == "offer_context"
     assert "passage-0001" in result["observation"]
+
+
+def test_session_memory_round_trip_keeps_passage_ids_and_human_marks(tmp_path):
+    state = {name: .4 for name in CORE_QUALITIES}
+    memory = TemporalMemory(passage_seconds=2.0)
+    for now in (0.0, 1.0, 2.0):
+        memory.update(now, state, .75)
+    mark = memory.mark_moment(2.0, "the silver opening", "keep this return")
+    store = SessionStore(tmp_path / "session.json")
+    store.save(memory)
+
+    restored = TemporalMemory(passage_seconds=2.0)
+    assert store.load_into(restored) is True
+    assert restored.passages[0]["id"] == "passage-0001"
+    assert restored.annotations[0]["id"] == mark["id"]
+    assert restored.annotations[0]["label"] == "the silver opening"
+    assert not (tmp_path / "session.json.tmp").exists()
+
+    for now in (3.0, 4.0, 5.0):
+        restored.update(now, state, .75)
+    assert restored.passages[-1]["id"] == "passage-0002"
+
+
+def test_session_memory_rejects_unknown_or_malformed_data(tmp_path):
+    path = tmp_path / "session.json"
+    path.write_text('{"version":"unknown"}', encoding="utf-8")
+    with np.testing.assert_raises_regex(ValueError, "unsupported"):
+        SessionStore(path).load_into(TemporalMemory())
+
+    path.write_text('{"version":"mirror-listener/session-v1","passages":{}}', encoding="utf-8")
+    with np.testing.assert_raises_regex(ValueError, "malformed"):
+        SessionStore(path).load_into(TemporalMemory())

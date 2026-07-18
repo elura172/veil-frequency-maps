@@ -349,6 +349,8 @@ belong to the input adapter rather than the perceptual core.
 - The system never claims privileged emotional access to the human.
 - Personal synesthetic learning is inspectable, correctable, and removable.
 - No network provider receives audio or listening history without explicit setup.
+- Session persistence is disabled by default and stores derived summaries only;
+  audio and raw spectral frames never enter the session file.
 
 ## Implementation sequence
 

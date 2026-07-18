@@ -9,6 +9,7 @@ from .bridge import CompanionBridge, RELATIONAL_MODES, VocabularyProfile
 from .features import analyze_stereo
 from .output import ListenerOutput
 from .perception import MirrorMusicEar
+from .session import SessionStore
 
 
 def audio_device(value: str):
@@ -52,16 +53,21 @@ def main() -> None:
                         help="companion bridge relational mode (silence is the default)")
     parser.add_argument("--profile", help="inspectable JSON shared-vocabulary profile")
     parser.add_argument("--invited", action="store_true", help="human has invited reflections for this run")
+    parser.add_argument("--session-file", help="opt in to local derived-memory persistence (never audio)")
     args = parser.parse_args()
     source_name = "file:" + args.file if args.file else "audio:" + str(args.device)
     ear = MirrorMusicEar(source_name)
+    session_store = SessionStore(args.session_file) if args.session_file else None
+    if session_store:
+        session_store.load_into(ear.memory)
+    saved_passages = len(ear.memory.passages)
     profile = VocabularyProfile.load(args.profile) if args.profile else None
     bridge = CompanionBridge(args.mode, profile)
     output = ListenerOutput(args.host, args.port, not args.no_osc, not args.no_ndjson)
     previous_spectrum, previous_rms, next_emit = None, 0.0, 0.0
 
     def process(samples, rate, heard_at):
-        nonlocal previous_spectrum, previous_rms, next_emit
+        nonlocal previous_spectrum, previous_rms, next_emit, saved_passages
         features, previous_spectrum = analyze_stereo(samples, rate, previous_spectrum, previous_rms)
         previous_rms = features.rms
         frame = ear.update(features, heard_at)
@@ -69,6 +75,9 @@ def main() -> None:
         if heard_at >= next_emit:
             output.send(frame)
             next_emit = heard_at + 1.0 / max(.1, args.emit_hz)
+        if session_store and len(ear.memory.passages) != saved_passages:
+            session_store.save(ear.memory)
+            saved_passages = len(ear.memory.passages)
 
     try:
         if args.file:
@@ -98,6 +107,8 @@ def main() -> None:
     except KeyboardInterrupt:
         pass
     finally:
+        if session_store:
+            session_store.save(ear.memory)
         output.close()
 
 
