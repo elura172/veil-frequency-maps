@@ -10,6 +10,10 @@ The local-first `mirror_voice` engine fuses acoustic measurements, language, cad
 
 Run it with `python3 -m mirror_voice`; see the [engine input contract](mirror_voice/README.md). Add `--ollama-model <local-model>` for optional LLM enrichment with automatic deterministic fallback.
 
+The project-agnostic [`mirror_listener`](mirror_listener/README.md) gives an AI companion ears for the music itself. It listens to stereo audio from BlackHole (or reads a WAV), derives twelve continuous musical qualities plus trends and events, and reflects them as structured NDJSON and compact OSC. Its slow numeric image can form phrases such as “seventy-six bright embers rise.”
+
+Run it with `python3 -m mirror_listener --device "BlackHole 2ch"`.
+
 This project uses two Ableton Live Remote Scripts:
 
 - **AbletonOSC** is the preferred, broad Live Object Model interface over UDP `11000/11001`.

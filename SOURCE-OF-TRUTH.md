@@ -5,14 +5,15 @@ This repository is a project-agnostic Ableton control platform and a collection 
 ## Authority order
 
 1. `osc_mcp/` — generic Live connectivity, MCP tools, gesture scheduling, curves, and safety limits.
-2. `mirror_voice/` — local acoustic/semantic fusion and the canonical six-quality Mirror field.
-3. `tests/` — generic infrastructure tests.
-4. `max-for-live/` — generic Max devices and versioned OSC protocols.
-5. `projects/<project_id>/spec.py` — canonical musical declaration for one independent work.
-6. `projects/<project_id>/scripts/` — deterministic transformations of that specification into Live.
-7. `projects/<project_id>/max_for_live/` — editable Max source; packaged `.amxd` files are snapshots.
-8. `projects/<project_id>/live/` — optional playable Live snapshots, derived from project source rather than treated as the only definition.
-9. Project documentation and shared reference material — human-readable intent.
+2. `mirror_listener/` — project-agnostic stereo music perception, twelve-quality state, temporal events, and structured output.
+3. `mirror_voice/` — human-voice acoustic/semantic fusion and the canonical six-quality modulation field.
+4. `tests/` — generic infrastructure tests.
+5. `max-for-live/` — generic Max devices and versioned OSC protocols.
+6. `projects/<project_id>/spec.py` — canonical musical declaration for one independent work.
+7. `projects/<project_id>/scripts/` — deterministic transformations of that specification into Live.
+8. `projects/<project_id>/max_for_live/` — editable Max source; packaged `.amxd` files are snapshots.
+9. `projects/<project_id>/live/` — optional playable Live snapshots, derived from project source rather than treated as the only definition.
+10. Project documentation and shared reference material — human-readable intent.
 
 Backups, caches, Ableton Project Info, collected samples, `.als.als` accidents, and Python bytecode are not source and are ignored.
 
@@ -34,8 +35,8 @@ Each project documents its own rebuild and validation sequence in its README. Bu
 ## Tests
 
 ```sh
-/usr/bin/python3 -m unittest discover -s tests -v
+/usr/bin/python3 -m pytest -q
 /usr/bin/python3 -m unittest discover -s projects -p 'test_*.py' -v
-/usr/bin/python3 -m compileall -q osc_mcp projects
+/usr/bin/python3 -m compileall -q osc_mcp mirror_listener mirror_voice projects
 git diff --check
 ```

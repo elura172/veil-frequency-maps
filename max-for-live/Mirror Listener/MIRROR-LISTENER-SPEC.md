@@ -158,6 +158,30 @@ Human associations override defaults only inside that human's personal profile.
 For example, “amber means distance to me” becomes a relationship-specific map,
 not a global rule.
 
+### Numeric image
+
+Mirror Listener may condense the current perceptual field into a slowly moving
+integer from `0..99`. This is the listener's **numeric image**: a deterministic,
+smoothed composite of the music's qualities, confidence, and recent trajectory,
+not a random ornament, rating, tempo, or claim about hidden truth.
+
+The number uses hysteresis and a slower release than momentary acoustic features
+so it feels remembered rather than flickering. Its evidence and confidence are
+published with the value. Companion-facing language spells the number out and
+may place it inside one compact image:
+
+> seventy-six bright embers rise
+
+The descriptor is assembled from the same bounded state:
+
+```text
+number + material/light adjective + image + directional verb
+```
+
+The numeric image is optional in analytical modes and may be given greater
+presence in poetic modes. Personal profiles may attach private significance to
+a number, but the default engine never supplies numerological meaning.
+
 ## Relational modes
 
 - `silent_witness` — listen and remember without speaking
@@ -266,6 +290,12 @@ and uncertainty. The established companion decides how—or whether—to share i
     "texture": {"primary": "smoked glass", "secondary": "fine rain", "confidence": 0.58},
     "direction": {"primary": "rising outward", "confidence": 0.55},
     "element": {"air": 0.58, "water": 0.31, "earth": 0.08, "fire": 0.03}
+  },
+  "numeric_image": {
+    "value": 76,
+    "words": "seventy-six",
+    "descriptor": "seventy-six bright embers rise",
+    "confidence": 0.69
   }
 }
 ```
@@ -280,6 +310,7 @@ perceptual endpoints add:
 /mirror/listener/v1/quality <name> <value> <trend> <confidence>
 /mirror/listener/v1/event <quality> <verb> <strength> <confidence>
 /mirror/listener/v1/synesthesia <domain> <primary> <confidence>
+/mirror/listener/v1/numeric_image <value> <confidence> <descriptor>
 /mirror/listener/v1/transport <listening|silent|paused>
 ```
 
