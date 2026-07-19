@@ -19,6 +19,7 @@ mirror-voice = "mirror_voice.__main__:main"
 mirror-voice-mic = "mirror_voice.capture:main"
 mirror-voice-listen = "mirror_voice.listen:main"
 mirror-music-listen = "mirror_listener.__main__:main"
+mirror-listener-mcp = "mirror_listener.mcp:main"
 
 [tool.setuptools.packages.find]
 include = ["osc_mcp*", "mirror_voice*", "mirror_listener*"]

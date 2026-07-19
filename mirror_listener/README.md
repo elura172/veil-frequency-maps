@@ -98,3 +98,39 @@ Endpoints:
 
 Requests are limited to 64 KiB. The API cannot bind to a non-loopback address
 and exposes derived perception only, never audio.
+
+## MCP for AI companions
+
+While the listener API is running, launch the stdio adapter with:
+
+```sh
+cd "/Users/mirrr/Desktop/veil frequency maps"
+python3 -m mirror_listener.mcp
+```
+
+It offers `mirror_listen_now`, `mirror_get_state`,
+`mirror_get_recent_changes`, `mirror_compare_passages`, `mirror_mark_moment`,
+and `mirror_set_relational_mode`. The adapter accepts only a loopback HTTP URL.
+Override its default only with `MIRROR_LISTENER_API`.
+
+Claude Desktop/Claude Code MCP entry:
+
+```json
+{
+  "type": "stdio",
+  "command": "/usr/bin/python3",
+  "args": ["-m", "mirror_listener.mcp"],
+  "cwd": "/Users/mirrr/Desktop/veil frequency maps",
+  "env": {"MIRROR_LISTENER_API": "http://127.0.0.1:8766"}
+}
+```
+
+Codex configuration entry:
+
+```toml
+[mcp_servers.mirror-listener]
+command = "/usr/bin/python3"
+args = ["-m", "mirror_listener.mcp"]
+cwd = "/Users/mirrr/Desktop/veil frequency maps"
+env = { MIRROR_LISTENER_API = "http://127.0.0.1:8766" }
+```

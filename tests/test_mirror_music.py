@@ -16,6 +16,7 @@ from mirror_listener.perception import MirrorMusicEar
 from mirror_listener.session import SessionStore
 from mirror_listener.synesthesia import SynestheticMapper
 from mirror_listener.api import CompanionState, start_api
+from mirror_listener.mcp import MCPServer, MirrorAPI, TOOLS as MIRROR_TOOLS
 
 
 RATE = 16000
@@ -281,3 +282,34 @@ def test_local_companion_api_health_state_and_loopback_boundary():
         assert changed == {"mode": "gentle_mirror"}
     finally:
         server.shutdown(); server.server_close()
+
+
+class FakeMirrorAPI:
+    def __init__(self): self.requests = []
+    def request(self, path, payload=None):
+        self.requests.append((path, payload))
+        return {"path": path, "payload": payload}
+
+
+def test_mirror_mcp_exposes_project_agnostic_companion_tools():
+    api = FakeMirrorAPI()
+    server = MCPServer(api)
+    listed = server.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+    names = {tool["name"] for tool in listed["result"]["tools"]}
+    assert names == {tool["name"] for tool in MIRROR_TOOLS}
+    called = server.handle({"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+                            "params": {"name": "mirror_mark_moment",
+                                       "arguments": {"label": "silver opening"}}})
+    assert called["result"].get("isError", False) is False
+    assert api.requests[-1] == ("/v1/mark", {"label": "silver opening"})
+
+
+def test_mirror_mcp_protocol_negotiation_and_localhost_boundary():
+    initialized = MCPServer(FakeMirrorAPI()).handle({
+        "jsonrpc": "2.0", "id": 1, "method": "initialize",
+        "params": {"protocolVersion": "2025-03-26"},
+    })
+    assert initialized["result"]["protocolVersion"] == "2025-03-26"
+    assert initialized["result"]["serverInfo"]["name"] == "mirror-listener"
+    with np.testing.assert_raises_regex(ValueError, "localhost"):
+        MirrorAPI("https://example.com")
