@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Ableton transient/project-generated material. Keep canonical Sets explicitly.
+projects/*/live/* Project/Backup/
+projects/*/live/* Project/Ableton Project Info/
+projects/*/live/* Project/Icon?
+projects/veil_one/live/* Project/Samples/
+*.als.als

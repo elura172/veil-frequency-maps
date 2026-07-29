@@ -1,0 +1,1 @@
+"""Independent Ableton composition projects."""

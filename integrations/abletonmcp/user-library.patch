@@ -1,0 +1,27 @@
+diff --git a/__init__.py b/__init__.py
+--- a/__init__.py
++++ b/__init__.py
+@@ -1120,4 +1120,7 @@ class AbletonMCP(ControlSurface):
+     def _find_browser_item_by_uri(self, browser_or_item, uri, max_depth=10, current_depth=0):
+         try:
++            if uri.startswith("name:") and hasattr(browser_or_item, 'name'):
++                if browser_or_item.name == uri[5:]:
++                    return browser_or_item
+             if hasattr(browser_or_item, 'uri') and browser_or_item.uri == uri:
+                 return browser_or_item
+@@ -1131,6 +1131,15 @@ class AbletonMCP(ControlSurface):
+                     browser_or_item.audio_effects,
+                     browser_or_item.midi_effects
+                 ]
++
++                # Custom Max for Live devices and presets live outside the
++                # factory categories. Include Live's indexed User Library so
++                # callers can load them by their stable device:* URI too.
++                for root_name in ('user_library', 'packs', 'max_for_live', 'plugins', 'current_project'):
++                    if hasattr(browser_or_item, root_name):
++                        categories.append(getattr(browser_or_item, root_name))
++                if hasattr(browser_or_item, 'user_folders'):
++                    categories.extend(browser_or_item.user_folders)
+                 
+                 for category in categories:
+                     item = self._find_browser_item_by_uri(category, uri, max_depth, current_depth + 1)
