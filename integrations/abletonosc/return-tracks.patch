@@ -1,0 +1,120 @@
+--- a/abletonosc/track.py
++++ b/abletonosc/track.py
+@@ -245,6 +245,117 @@
+         self.osc_server.add_handler("/live/track/get/input_routing_channel", create_track_callback(track_get_input_routing_channel))
+         self.osc_server.add_handler("/live/track/set/input_routing_channel", create_track_callback(track_set_input_routing_channel))
+ 
++        #--------------------------------------------------------------------------------
++        # Return tracks.
++        #
++        # Live keeps return tracks in a list of their own, so none of the /live/track/*
++        # handlers above can address them. These mirror the subset needed to inspect and
++        # shape a return's device chain, plus browser loading, which Live only offers via
++        # the selected track.
++        #--------------------------------------------------------------------------------
++        def create_return_callback(func: Callable):
++            def return_callback(params: Tuple[Any]):
++                return_index = int(params[0])
++                return_tracks = self.song.return_tracks
++                if return_index < 0 or return_index >= len(return_tracks):
++                    raise IndexError("Return track index out of range: %d" % return_index)
++                rv = func(return_tracks[return_index], tuple(params[1:]))
++                if rv is not None:
++                    return (return_index, *rv)
++
++            return return_callback
++
++        def _return_device(return_track, device_index):
++            device_index = int(device_index)
++            if device_index < 0 or device_index >= len(return_track.devices):
++                raise IndexError("Device index out of range: %d" % device_index)
++            return return_track.devices[device_index]
++
++        def return_get_name(return_track, _):
++            return (return_track.name,)
++
++        def return_set_name(return_track, params):
++            return_track.name = str(params[0])
++
++        def return_get_num_devices(return_track, _):
++            return (len(return_track.devices),)
++
++        def return_get_device_names(return_track, _):
++            return tuple(device.name for device in return_track.devices)
++
++        def return_get_volume(return_track, _):
++            return (return_track.mixer_device.volume.value,)
++
++        def return_set_volume(return_track, params):
++            return_track.mixer_device.volume.value = float(params[0])
++
++        def return_get_device_parameter_names(return_track, params):
++            device = _return_device(return_track, params[0])
++            return (int(params[0]),) + tuple(parameter.name for parameter in device.parameters)
++
++        def return_get_device_parameter_values(return_track, params):
++            device = _return_device(return_track, params[0])
++            return (int(params[0]),) + tuple(parameter.value for parameter in device.parameters)
++
++        def return_get_device_parameter_value_string(return_track, params):
++            device = _return_device(return_track, params[0])
++            parameter = device.parameters[int(params[1])]
++            return (int(params[0]), int(params[1]), parameter.str_for_value(parameter.value))
++
++        def return_set_device_parameter_value(return_track, params):
++            device = _return_device(return_track, params[0])
++            device.parameters[int(params[1])].value = float(params[2])
++
++        def _find_browser_item(node, uri, depth=0):
++            if depth > 10:
++                return None
++            if getattr(node, "uri", None) == uri:
++                return node
++            roots = ("audio_effects", "midi_effects", "instruments", "sounds", "drums",
++                     "user_library", "packs", "max_for_live", "plugins", "current_project")
++            if hasattr(node, "audio_effects"):
++                for root in roots:
++                    branch = getattr(node, root, None)
++                    if branch is None:
++                        continue
++                    found = _find_browser_item(branch, uri, depth + 1)
++                    if found is not None:
++                        return found
++                return None
++            for child in getattr(node, "children", ()) or ():
++                found = _find_browser_item(child, uri, depth + 1)
++                if found is not None:
++                    return found
++            return None
++
++        def return_load_device(return_track, params):
++            uri = str(params[0])
++            browser = self.manager.application().browser
++            item = _find_browser_item(browser, uri)
++            if item is None:
++                raise ValueError("Browser item not found: %s" % uri)
++            # Live's browser loads into whichever track is selected, and a return
++            # track is selectable like any other.
++            self.song.view.selected_track = return_track
++            browser.load_item(item)
++            return (item.name, len(return_track.devices))
++
++        self.osc_server.add_handler("/live/song/get/num_return_tracks",
++                                    lambda _: (len(self.song.return_tracks),))
++        self.osc_server.add_handler("/live/song/get/return_track_names",
++                                    lambda _: tuple(t.name for t in self.song.return_tracks))
++        self.osc_server.add_handler("/live/return/get/name", create_return_callback(return_get_name))
++        self.osc_server.add_handler("/live/return/set/name", create_return_callback(return_set_name))
++        self.osc_server.add_handler("/live/return/get/num_devices", create_return_callback(return_get_num_devices))
++        self.osc_server.add_handler("/live/return/get/devices/name", create_return_callback(return_get_device_names))
++        self.osc_server.add_handler("/live/return/get/volume", create_return_callback(return_get_volume))
++        self.osc_server.add_handler("/live/return/set/volume", create_return_callback(return_set_volume))
++        self.osc_server.add_handler("/live/return/get/device/parameters/name", create_return_callback(return_get_device_parameter_names))
++        self.osc_server.add_handler("/live/return/get/device/parameters/value", create_return_callback(return_get_device_parameter_values))
++        self.osc_server.add_handler("/live/return/get/device/parameter/value_string", create_return_callback(return_get_device_parameter_value_string))
++        self.osc_server.add_handler("/live/return/set/device/parameter/value", create_return_callback(return_set_device_parameter_value))
++        self.osc_server.add_handler("/live/return/load_device", create_return_callback(return_load_device))
++
+     def _set_mixer_property(self, target, prop, params: Tuple) -> None:
+         parameter_object = getattr(target.mixer_device, prop)
+         self.logger.info("Setting property for %s: %s (new value %s)" % (self.class_identifier, prop, params[0]))
